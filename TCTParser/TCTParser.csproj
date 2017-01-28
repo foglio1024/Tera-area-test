@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E78B04C1-7848-4D51-A7A2-AF00BBBCFB27}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TCTParser</RootNamespace>
+    <AssemblyName>TCTParser</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\TCTMain\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DataParser.cs" />
+    <Compile Include="Processors\CreditsUpdateProcessor.cs" />
+    <Compile Include="Processors\DungeonRunsProcessor.cs" />
+    <Compile Include="Processors\GuildLogoProcessor.cs" />
+    <Compile Include="Processors\ListParser.cs" />
+    <Compile Include="Processors\AccountLoginProcessor.cs" />
+    <Compile Include="Processors\BankProcessor.cs" />
+    <Compile Include="Processors\CharListProcessor.cs" />
+    <Compile Include="Processors\CharLoginProcessor.cs" />
+    <Compile Include="Processors\CombatProcessor.cs" />
+    <Compile Include="Processors\CrystalbindProcessor.cs" />
+    <Compile Include="Processors\DungeonClearsProcessor.cs" />
+    <Compile Include="Processors\GuildQuestListProcessor.cs" />
+    <Compile Include="Processors\InventoryProcessor.cs" />
+    <Compile Include="Processors\NocteniumProcessor.cs" />
+    <Compile Include="Processors\SectionProcessor.cs" />
+    <Compile Include="Processors\SystemMessageProcessor.cs" />
+    <Compile Include="Processors\VanguardWindowProcessor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="StringUtils.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shinra Meter\Data\Data.csproj">
+      <Project>{4B6AA9BD-CEC2-4AA6-B35A-1ACB2FA7767B}</Project>
+      <Name>Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Shinra Meter\TeraCommon\Tera.Core.csproj">
+      <Project>{ee476c7c-2942-4ba4-ab47-7adbe65635fd}</Project>
+      <Name>Tera.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TCTNotifier\TCTNotifier.csproj">
+      <Project>{AE9993A3-7636-4BED-9AFC-F6D726BF9696}</Project>
+      <Name>TCTNotifier</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TCTData\TCTData\TCTData.csproj">
+      <Project>{325deb0a-2e02-495d-9612-058385f9db9d}</Project>
+      <Name>TCTData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TCTUI\TCTUI.csproj">
+      <Project>{17ec9a9a-527c-47ca-a4f3-682fc1b9163c}</Project>
+      <Name>TCTUI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

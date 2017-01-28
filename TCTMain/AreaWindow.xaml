@@ -1,0 +1,32 @@
+﻿<Window x:Class="TCTMain.AreaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCTMain"
+        mc:Ignorable="d"
+        Title="Tera Area" Closing="Window_Closing" SizeToContent="Width" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Name="TBc" Margin="4,0" Grid.ColumnSpan="1">Status:</TextBlock>
+            <TextBlock Name="us" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Margin="0,0,-1,0">users</TextBlock>
+            
+        </Grid>
+        <Viewbox Grid.Row="1" Margin="10">
+
+            <Grid Name="root" Grid.Row="1" Width="Auto" Height="Auto">
+                <Image Name="img" Width="800" Source="resources/maps/WMap_DG_HugeDragon.png" />
+            </Grid>
+        </Viewbox>
+        
+
+    </Grid>
+</Window>
