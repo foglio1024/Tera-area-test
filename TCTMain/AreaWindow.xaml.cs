@@ -1,6 +1,7 @@
 ﻿using Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -25,7 +26,40 @@ namespace TCTMain
     {
         public static AreaWindow AreaWindow;
     }
+    public class User
+    {
+        public long Id { get; set; }
+        public long CId { get; set; }
+        public string Name { get; set; }
+        public string Guild { get; set; }
+        public string Rank { get; set; }
+        public string Race { get; set; }
+        public string Gender { get; set; }
+        public string Class { get; set; }
+        public uint Level { get; set; }
 
+        public User(long id,long cid, string n, string g, string r, string race, string gender, string c, uint l)
+        {
+            Id = id;
+            CId = cid;
+            Name = n;
+            Guild = g;
+            Rank = r;
+            Class = ItemToolTip.Classes.Find(x => x.Name.Equals(c, StringComparison.OrdinalIgnoreCase)).DisplayedText;
+            Level = l;
+            Gender = ItemToolTip.Genders.Find(x => x.Name.Equals(gender, StringComparison.OrdinalIgnoreCase)).DisplayedText;
+
+            if (race == "popori" && gender == "female")
+            {
+                Race = ItemToolTip.Races.Find(x => x.Name.Equals("elin", StringComparison.OrdinalIgnoreCase)).DisplayedText;
+            }
+            else
+            {
+                Race = ItemToolTip.Races.Find(x => x.Name.Equals(race, StringComparison.OrdinalIgnoreCase)).DisplayedText; ;
+            }
+
+        }
+    }
     /// <summary>
     /// Logica di interazione per Window1.xaml
     /// </summary>
@@ -44,6 +78,8 @@ namespace TCTMain
             ContinentData.PopulateContinentData();
             StrSheet_Creature.PopulateHuntingZones();
             AreaDatabase.PopulateAreas();
+            UserData.PopulateUserData();
+            ItemToolTip.PopulateItemToolTip();
 
             AreaDataParser = new AreaDataParser();
 
@@ -63,7 +99,13 @@ namespace TCTMain
             Section.SectionChanged += ChangeSection;
 
             UI.AreaWindow = this;
+            DataContext = this;
+
+            Users = new ObservableCollection<User>();
+            BindingOperations.EnableCollectionSynchronization(Users, new object());
+            lview.ItemsSource = Users;
         }
+        ObservableCollection<User> Users; 
 
         AreaDataParser AreaDataParser;
         public static Guard CurrentGuard;
@@ -76,6 +118,20 @@ namespace TCTMain
         static List<UserDot> UserDots;
         static List<UserDot> NpcDots;
         static UserDot PlayerDot;
+
+        public void AddUser(User u)
+        {
+            for (int i = 0; i < Users.Count; i++)
+            {
+                if(Users[i].Id == u.Id)
+                {
+                    return;
+                }
+            }
+            Users.Add(u);
+            users++;
+        }
+
 
         //Movement handlers
         private void MovePlayer(Location l)
@@ -140,7 +196,7 @@ namespace TCTMain
                     UserDots.Add(newUserDot);
                     EntityCanvas.Children.Add(newUserDot);
 
-                    users++;
+                    //users++;
                     us.Text = users.ToString();
                     //Console.WriteLine("[USER][SPAWN] {0}", l.Id);
                 }
@@ -186,7 +242,7 @@ namespace TCTMain
                     NpcDots.Add(newNpcDot);
                     EntityCanvas.Children.Add(newNpcDot);
 
-                    users++;
+                    //users++;
                     us.Text = users.ToString();
                     //Console.WriteLine("[NPC][SPAWN] {0}", l.Id);
                 }
@@ -262,7 +318,9 @@ namespace TCTMain
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
-            Section.Current = NewWorldMapData.GetSection("WMap_RNW_Guard");
+
+            Section.Current = NewWorldMapData.GetSection("WMap_RNW_Vill");
+
             if(Section.Current != null)
             {
                 MapData.Scale = img.Width / Section.Current.MapData.Size.Width;

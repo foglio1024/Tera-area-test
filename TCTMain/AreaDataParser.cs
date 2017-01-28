@@ -40,7 +40,6 @@ namespace TCTMain
                     MovePlayer.Invoke(LocationParser.PlayerLocation(packet));
                     break;
                 case "C_PLAYER_FLYING_LOCATION":
-                    Analyze(packet);
                     MovePlayer.Invoke(LocationParser.PlayerFlyingLocation(packet));
                     break;
                 case "S_USER_LOCATION":
@@ -50,6 +49,7 @@ namespace TCTMain
                     MoveUser.Invoke(LocationParser.UserFlyingLocation(packet));
                     break;
                 case "S_SPAWN_USER":
+                    AnalyzeParsed(new S_SPAWN_USER(new CustomReader(message)));
                     SpawnUser.Invoke(LocationParser.UserSpawnedLocation(packet));
                     break;
                 case "S_DESPAWN_USER":
@@ -72,23 +72,535 @@ namespace TCTMain
                     break;
             }
         }
-        private void Analyze(string p)
+        void AnalyzeParsed(S_SPAWN_USER m)
         {
-             var m = new C_PLAYER_FLYING_LOCATION(p);
 
-            var v = new Vector3f { X = m.vx, Y = m.vy };
-
-            Console.WriteLine("{0} {1} {2} - ({3}, {4}, {5}) -> {6}",
-                m.unk1.ToString("000000.00"),
-                m.unk4.ToString("000000.00"),
-                m.unk5.ToString("000000.00"),
-                m.vx.ToString("0.00"),
-                m.vy.ToString("0.00"),
-                m.vz.ToString("0.00"),
-                m.Heading
+            var template = UserData.UserTemplates.Find(x => x.Id == m.templateId);
+            
+            Console.WriteLine("Lv.{4} - {0}:\t {3} {5} {6} -- {2} of {1}",
+                m.name,             //0
+                m.guildName,        //1 
+                m.guildRank,        //2
+                template.Race,      //3
+                m.level,            //4
+                template.Gender,    //5 
+                template.TeraClass  //6
                 );
 
+            UI.AreaWindow.AddUser(new User(m.userId,m.cId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level));
+
         }
+        void Analyze(string p)
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < p.Length; i++)
+            {
+                if(i != 0 && i%8 == 0)
+                {
+                    sb.Append(" ");
+                }
+                sb.Append(p[i]);
+            }
+
+            Console.WriteLine(sb.ToString());
+        }
+
+        class S_LOAD_TOPO 
+        {
+            public S_LOAD_TOPO(CustomReader r)
+            {
+
+                ContinentId = r.ReadUInt32();
+
+                Y = r.ReadSingle();
+                X = r.ReadSingle();
+                Z = r.ReadSingle();
+
+                Unk = r.ReadByte();
+            }  
+
+            public uint ContinentId { get; private set; }
+            public float Y { get; private set; }
+            public float X { get; private set; }
+            public float Z { get; private set; }
+
+            public byte Unk { get; private set; }
+        }
+        class S_SPAWN_ME 
+        {
+            public S_SPAWN_ME(CustomReader r)
+            {
+
+                Id = r.ReadInt64();
+
+                Y = r.ReadSingle();
+                X = r.ReadSingle();
+                Z = r.ReadSingle();
+
+                Heading = r.ReadUInt32();
+
+                Alive = r.ReadByte();
+                Unk = r.ReadByte();
+            }
+
+            public long Id {get;private set; }
+
+            public float Y { get; private set; }
+            public float X { get; private set; }
+            public float Z { get; private set; }
+
+            public uint Heading { get; private set; }
+
+            public byte Alive { get; private set; }
+            public byte Unk { get; private set; }
+
+
+        }
+        class S_SPAWN_NPC 
+        {
+            public S_SPAWN_NPC(CustomReader r)
+            {
+
+                unk1 = r.ReadInt32();
+                unk2 = r.ReadInt32();
+
+                pointer1 = r.ReadUInt16();
+                id = r.ReadInt64();
+                targetId = r.ReadInt64();
+                y = r.ReadSingle();
+                x = r.ReadSingle();
+                z = r.ReadSingle();
+                heading = r.ReadUInt16();
+                unk3 = r.ReadInt32();
+                templateId = r.ReadUInt32();
+                zoneId = r.ReadUInt16();
+                unk4 = r.ReadUInt16();
+                unk5 = r.ReadUInt32();
+                unk6 = r.ReadUInt16();
+                unk7 = r.ReadUInt16();
+                unk8 = r.ReadUInt16();
+                flag1 = r.ReadByte();
+                flag2 = r.ReadByte();
+                flag3 = r.ReadByte();
+                unk12_1  = r.ReadUInt32();
+                unk12_2  = r.ReadUInt32();
+                unk12_3  = r.ReadUInt32();
+                unk12_4  = r.ReadUInt32();
+                unk12_5  = r.ReadUInt32();
+                unk12_6  = r.ReadUInt32();
+                unk12_7  = r.ReadUInt32();
+                unk12_8  = r.ReadUInt32();
+                unk12_9  = r.ReadUInt32();
+                unk12_10 = r.ReadUInt32();
+                unk12_11 = r.ReadUInt32();
+                unk12_12 = r.ReadUInt32();
+                unk13 = r.ReadByte();
+                unk14 = r.ReadUInt16();
+                unk15 = r.ReadUInt16();
+                unk16 = r.ReadUInt16();
+                unk17 = r.ReadUInt32();
+            }
+
+            public int unk1{get; private set;} // 0x0
+            public int unk2{get; private set;} // 0x0
+            public ushort pointer1{get; private set;} // 0x7A
+            public long id{get; private set;}
+            public long targetId{get; private set;} //aggro target?
+            public float y{get; private set;}
+            public float x{get; private set;}
+            public float z{get; private set;}
+            public ushort heading{get; private set;}
+            public int unk3{get; private set;} //0x0C most npc -- 0x0A for unknown
+            public uint templateId{get; private set;}
+            public ushort zoneId{get; private set;}
+            public ushort unk4{get; private set;} //0x64 -- 0x3C -- 0x0
+            public uint unk5{get; private set;} //0xA0 -- 0x0 for unknown -- 0x6E -- 0x75 -- 0x10089 -- 0x50 -- 0x64
+            public ushort unk6{get; private set;} // 0x0 
+            public ushort unk7{get; private set;} // 0x5
+            public ushort unk8{get; private set;} // 0x0
+            public byte flag1{get; private set;}  // true
+            public byte flag2{get; private set;} // false for unknown and enemies (invincible?)
+            public byte flag3{get; private set;} // almost always true
+            public uint unk12_1{get; private set;} // 0x0
+            public uint unk12_2{get; private set;} // 0x0
+            public uint unk12_3{get; private set;} // 0x0
+            public uint unk12_4{get; private set;} // 0x0
+            public uint unk12_5{get; private set;} // 0x0 or 0x1
+            public uint unk12_6{get; private set;} // 0x0
+            public uint unk12_7{get; private set;} // 0x0
+            public uint unk12_8{get; private set;} // 0x0
+            public uint unk12_9{get; private set;} // 0x0
+            public uint unk12_10{get; private set;}// 0x0
+            public uint unk12_11{get; private set;}// 0x0
+            public uint unk12_12{get; private set;}// 0x0
+            public byte unk13{get; private set;}
+            public ushort unk14{get; private set;} //0x0
+            public ushort unk15{get; private set;} //0x1 (bool x2?)
+            public ushort unk16{get; private set;}
+            public uint unk17{get; private set;}
+
+            //more stuff for longer packets
+
+
+
+
+        }
+        class S_SPAWN_USER
+        {
+            public uint Size { get; set; }
+            public uint OpCode { get; set; }
+            public ushort iconsCount{get; private set;}
+            ushort iconsOffset;
+            public ushort count2{get; private set;}
+            ushort offset2;
+            ushort nameOffset;
+            ushort guildNameOffset;
+            ushort guildRankOffset;
+            ushort detailsOffset;
+            public ushort detailsCount{get; private set;}
+            ushort guildTitleOffset;
+            ushort guildEmblemOffset;
+            ushort details2Offset;
+            public ushort details2Count{get; private set;}
+            public long cId{get; private set;}  //?
+            public long userId{get; private set;}
+            public float y{get; private set;}
+            public float x{get; private set;}
+            public float z{get; private set;}
+            public ushort heading{get; private set;}
+            public int relation{get; private set;} //?
+            public uint templateId{get; private set;} //UserData.xml
+            public ushort unk1{get; private set;} //0x0
+            public ushort unk2{get; private set;}
+            public ushort unk3{get; private set;}
+            public ushort unk4{get; private set;} //0x0
+            public ushort unk5{get; private set;} //0x0
+            public byte unk6{get; private set;} //1
+            public byte unk7{get; private set;} //1
+            public long appearance{get; private set;}
+            public uint weaponId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public uint chestId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public uint glovesId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public uint bootsId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public uint innerWearId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public uint headItemId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public uint faceItemId{get; private set;} //ItemData-i.xml -- StrSheet_Item-i.xml
+            public int unk8{get; private set;} //0x1 or 0x0
+            public int unk9{get; private set;}
+            public int unk10{get; private set;} //0x07
+            public uint unk11{get; private set;}
+            public int unk12{get; private set;} //0x0
+            public int unk13{get; private set;} // 0x0
+            public uint guildLaurelId{get; private set;} //GuildEmblem.xml
+            public byte unk14{get; private set;}
+            public int unk15{get; private set;} //0x0
+            public int unk16{get; private set;} //0x0
+            public int unk17{get; private set;} //0x0
+            public int unk18{get; private set;} //0x0
+            public int unk19{get; private set;} //0x0
+            public ushort unk20{get; private set;}
+            public byte rchest{get; private set;}
+            public byte gchest{get; private set;}
+            public byte bchest{get; private set;}
+            public byte achest{get; private set;}
+            public byte rgloves{get; private set;}
+            public byte ggloves{get; private set;}
+            public byte bgloves{get; private set;}
+            public byte agloves{get; private set;}
+            public byte rboots{get; private set;}
+            public byte gboots{get; private set;}
+            public byte bboots{get; private set;}
+            public byte aboots{get; private set;}
+            public uint unk21{get; private set;} //0x0
+            public uint unk22{get; private set;} //0x0
+            public uint unk23{get; private set;} //0x0
+            public uint unk24{get; private set;} //0x0
+            public uint weaponEnchant{get; private set;}
+            public ushort unk25{get; private set;}
+            public uint level{get; private set;}
+            public int unk26{get; private set;} //0x0
+            public int unk27{get; private set;} //0x0
+            public byte unk28{get; private set;}
+            public uint headCostumeId{get; private set;}
+            public uint faceCostumeId{get; private set;}
+            public uint backCostumeId{get; private set;}
+            public uint weaponCostumeId{get; private set;}
+            public uint bodyCostumeId{get; private set;}
+            public byte rBodyCostume{get; private set;}
+            public byte gBodyCostume{get; private set;}
+            public byte bBodyCostume{get; private set;}
+            public byte aBodyCostume{get; private set;}
+            public int unk29{get; private set;}
+            public int unk30{get; private set;}
+            public ushort unk31{get; private set;} //0x0001
+            public int unk32{get; private set;}
+            public int unk33{get; private set;} //0x0
+            public int unk34{get; private set;} //0x0, 0x64
+            public float unk35{get; private set;} //1.0
+            public string name{get; private set;}
+            public string guildName{get; private set;}
+            public string guildRank{get; private set;}
+            public byte[] details{get; private set;}
+            public string guildTitle{get; private set;}
+            public string guildEmblem{get; private set;}
+            public byte[] details2{get; private set;}
+
+            public S_SPAWN_USER(CustomReader r)
+            {
+
+                iconsCount = r.ReadUInt16();
+                iconsOffset = r.ReadUInt16();
+
+                count2 = r.ReadUInt16();
+                offset2 = r.ReadUInt16();
+
+                nameOffset = r.ReadUInt16();
+                guildNameOffset = r.ReadUInt16();
+                guildRankOffset = r.ReadUInt16();
+                detailsOffset = r.ReadUInt16();
+                detailsCount = r.ReadUInt16();
+                guildTitleOffset = r.ReadUInt16();
+                guildEmblemOffset = r.ReadUInt16();
+                details2Offset = r.ReadUInt16();
+                details2Count = r.ReadUInt16();
+
+                cId = r.ReadInt64();
+                userId = r.ReadInt64();
+
+                y = r.ReadSingle();
+                x = r.ReadSingle();
+                z = r.ReadSingle();
+
+                heading = r.ReadUInt16();
+
+                relation = r.ReadInt32();
+
+                templateId = r.ReadUInt32();
+
+                unk1 = r.ReadUInt16();
+                unk2 = r.ReadUInt16();
+                unk3 = r.ReadUInt16();
+                unk4 = r.ReadUInt16();
+                unk5 = r.ReadUInt16();
+
+                unk6 = r.ReadByte();
+                unk7 = r.ReadByte();
+
+                appearance = r.ReadInt64();
+
+                weaponId = r.ReadUInt32();
+                chestId = r.ReadUInt32();
+                glovesId = r.ReadUInt32();
+                bootsId = r.ReadUInt32();
+                innerWearId = r.ReadUInt32();
+                headItemId = r.ReadUInt32();
+                faceItemId = r.ReadUInt32();
+
+                unk8 = r.ReadInt32();
+                unk9 = r.ReadInt32();
+                unk10 = r.ReadInt32();
+
+                unk11 = r.ReadUInt32();
+
+                unk12 = r.ReadInt32();
+                unk13 = r.ReadInt32();
+
+                guildLaurelId = r.ReadUInt32();
+
+                unk14 = r.ReadByte();
+
+                unk15 = r.ReadInt32();
+                unk16 = r.ReadInt32();
+                unk17 = r.ReadInt32();
+                unk18 = r.ReadInt32();
+                unk19 = r.ReadInt32();
+
+                unk20 = r.ReadUInt16();
+
+                rchest = r.ReadByte();
+                gchest  = r.ReadByte();
+                bchest  = r.ReadByte();
+                achest  = r.ReadByte();
+
+                rgloves = r.ReadByte();
+                ggloves = r.ReadByte();
+                bgloves = r.ReadByte();
+                agloves = r.ReadByte();
+
+                rboots  = r.ReadByte();
+                gboots  = r.ReadByte();
+                bboots  = r.ReadByte();
+                aboots  = r.ReadByte();
+
+                unk21 = r.ReadUInt32();
+                unk22 = r.ReadUInt32();
+                unk23 = r.ReadUInt32();
+                unk24 = r.ReadUInt32();
+
+                weaponEnchant = r.ReadUInt32();
+
+                unk25 = r.ReadUInt16();
+
+                level = r.ReadUInt32();
+
+                unk26 = r.ReadInt32();
+                unk27 = r.ReadInt32();
+
+                unk28 = r.ReadByte();
+
+                headCostumeId = r.ReadUInt32();
+                faceCostumeId   = r.ReadUInt32();
+                backCostumeId   = r.ReadUInt32();
+                weaponCostumeId = r.ReadUInt32();
+                bodyCostumeId   = r.ReadUInt32();
+
+                rBodyCostume = r.ReadByte();
+                gBodyCostume = r.ReadByte();
+                bBodyCostume = r.ReadByte();
+                aBodyCostume = r.ReadByte();
+
+                unk29 = r.ReadInt32();
+                unk30 = r.ReadInt32();
+                unk31 = r.ReadUInt16();
+                unk32 = r.ReadInt32();
+                unk33 = r.ReadInt32();
+                unk34 = r.ReadInt32();
+
+                unk35 = r.ReadSingle();
+
+                name = r.ReadTeraString();
+                guildName = r.ReadTeraString();
+                guildRank = r.ReadTeraString();
+
+                details = new byte[detailsCount];
+                for (int i = 0; i < detailsCount; i++)
+                {
+                    details[i] = r.ReadByte();
+                }
+
+                guildTitle = r.ReadTeraString();
+                guildEmblem = r.ReadTeraString();
+
+                details2 = new byte[details2Count];
+                for (int i = 0; i < details2Count; i++)
+                {
+                    details2[i] = r.ReadByte();
+                }
+
+            }
+        }
+        class C_PLAYER_LOCATION 
+        {
+            public C_PLAYER_LOCATION(CustomReader r)
+            {
+                Y = r.ReadSingle();
+                X = r.ReadSingle();
+                Z = r.ReadSingle();
+
+                Heading = r.ReadUInt32();
+
+                Y2 = r.ReadSingle();
+                X2 = r.ReadSingle();
+                Z2 = r.ReadSingle();
+
+                Unk1 = r.ReadUInt16();
+                Unk2 = r.ReadByte();
+                Time = r.ReadUInt32();
+            }
+
+            public float Y{get; private set;}
+            public float X{get; private set;}
+            public float Z{get; private set;}
+
+            public uint Heading{get; private set;}
+
+            public float Y2{get; private set;}
+            public float X2{get; private set;}
+            public float Z2{get; private set;}
+
+            public ushort Unk1{get; private set;}
+            public byte Unk2{get; private set;}
+            public uint Time{get; private set;}
+
+        }
+        class C_VISIT_NEW_SECTION 
+        {
+            public C_VISIT_NEW_SECTION(CustomReader r)
+            {
+                WorldId = r.ReadUInt32();
+                GuardId = r.ReadUInt32();
+                SectionId = r.ReadUInt32();
+            }
+
+            public uint WorldId { get; private set; }
+            public uint GuardId { get; private set; }
+            public uint SectionId { get; private set; }
+        }
+
+        class C_PLAYER_FLYING_LOCATION 
+        {
+            public C_PLAYER_FLYING_LOCATION(CustomReader r)
+            {
+
+                State = r.ReadUInt32();
+                Y = r.ReadSingle();
+                X = r.ReadSingle();
+                Z = r.ReadSingle();
+
+                Y2 = r.ReadSingle();
+                X2 = r.ReadSingle();
+                Z2 = r.ReadSingle();
+
+                Unk1 = r.ReadSingle();
+
+                Unk2 = r.ReadUInt16();
+                Unk3 = r.ReadUInt16();
+
+                Unk4 = r.ReadSingle();
+                Unk5 = r.ReadSingle();
+                Vy = r.ReadSingle();
+                Vx = r.ReadSingle();
+                Vz = r.ReadSingle();
+
+
+            }
+
+            public uint State { get; private set; }
+
+            public float Y { get; private set; }
+            public float X { get; private set; }
+            public float Z { get; private set; }
+
+            public float Y2 { get; private set; }
+            public float X2 { get; private set; }
+            public float Z2 { get; private set; }
+            public float Unk1 { get; private set; }
+
+            public ushort Unk2 { get; private set; }
+            public ushort Unk3 { get; private set; }
+
+            public float Unk4 { get; private set; }
+            public float Unk5 { get; private set; }
+
+            public float Vy { get; private set; }
+            public float Vx {get; private set;}
+            public float Vz { get; private set; }
+
+            public double Heading
+            {
+                get
+                {
+                    return 0x8000 * (((-Math.Atan2(Vx, -Vy)) / Math.PI) + 1);
+                }
+                private set
+                {
+
+                }
+            }
+
+        }
+
+
         public Action<Location> MovePlayer;
 
         public Action<Location> MoveUser;
@@ -122,6 +634,7 @@ namespace TCTMain
 
             public Dictionary<uint, uint> Versions { get; } = new Dictionary<uint, uint>();
         }
+        
         class CustomReader : BinaryReader
         {
             public CustomReader(Tera.Message message)
@@ -180,270 +693,27 @@ namespace TCTMain
 
         }
 
-        class C_PLAYER_LOCATION : ParsedMessage
-        {
-            public C_PLAYER_LOCATION(string p)
-            {
-                packet = p;
-                Size = ReadUInt16();
-                OpCode = ReadUInt16();
+        //public class ParsedMessage : BinaryReader
+        //{
 
-                y = ReadFloat();
-                x = ReadFloat();
-                z = ReadFloat();
+        //    public ParsedMessage(string p) : base(GetStream(p), Encoding.Unicode)
+        //    {
+        //        packet = p;
+        //    }
 
-                heading = ReadUInt32();
-
-                y2 = ReadFloat();
-                x2 = ReadFloat();
-                z2 = ReadFloat();
-
-                unk1 = ReadUInt16();
-                unk2 = ReadByte();
-                time = ReadUInt32();
-            }
-
-            public float y{get; private set;}
-            public float x{get; private set;}
-            public float z{get; private set;}
-
-            public uint heading{get; private set;}
-
-            public float y2{get; private set;}
-            public float x2{get; private set;}
-            public float z2{get; private set;}
-
-            public ushort unk1{get; private set;}
-            public byte unk2{get; private set;}
-            public uint time{get; private set;}
-
-        }
-        class C_PLAYER_FLYING_LOCATION : ParsedMessage
-        {
-            public C_PLAYER_FLYING_LOCATION(string p)
-            {
-                packet = p;
-
-                Size = ReadUInt16();
-                OpCode = ReadUInt16();
-
-                state = ReadUInt32();
-                y = ReadFloat();
-                x = ReadFloat();
-                z = ReadFloat();
-
-                y2 = ReadFloat();
-                x2 = ReadFloat();
-                z2 = ReadFloat();
-
-                unk1 = ReadFloat();
-
-                unk2 = ReadUInt16();
-                unk3 = ReadUInt16();
-
-                unk4 = ReadFloat();
-                unk5 = ReadFloat();
-                vy = ReadFloat();
-                vx = ReadFloat();
-                vz = ReadFloat();
+        //    private static MemoryStream GetStream(string packet)
+        //    {
+        //        return new MemoryStream(StringUtils.StringToByteArray(packet));
+        //    }
+        //    protected string packet;
 
 
-            }
-
-            public uint state { get; private set; }
-
-            public float y { get; private set; }
-            public float x { get; private set; }
-            public float z { get; private set; }
-
-            public float y2 { get; private set; }
-            public float x2 { get; private set; }
-            public float z2 { get; private set; }
-            public float unk1 { get; private set; }
-
-            public ushort unk2 { get; private set; }
-            public ushort unk3 { get; private set; }
-
-            public float unk4 { get; private set; }
-            public float unk5 { get; private set; }
-
-            public float vy { get; private set; }
-            public float vx {get; private set;}
-            public float vz { get; private set; }
-
-            public double Heading
-            {
-                get
-                {
-                    return 0x8000 * (((-Math.Atan2(vx, -vy)) / Math.PI) + 1);
-                }
-                private set
-                {
-
-                }
-            }
-
-        }
-        class S_SPAWN_NPC : ParsedMessage
-        {
-            public S_SPAWN_NPC(string p)
-            {
-                packet = p;
-                Size = ReadUInt16();
-                OpCode = ReadUInt16();
-
-                unk1 = ReadInt32();
-                unk2 = ReadInt32();
-
-                pointer1 = ReadUInt16();
-                id = ReadLong();
-                targetId = ReadLong();
-                y = ReadFloat();
-                x = ReadFloat();
-                z = ReadFloat();
-                heading = ReadUInt16();
-                unk3 = ReadInt32();
-                templateId = ReadUInt32();
-                zoneId = ReadUInt16();
-                unk4 = ReadUInt16();
-                unk5 = ReadUInt32();
-                unk6 = ReadUInt16();
-                unk7 = ReadUInt16();
-                unk8 = ReadUInt16();
-                flag1 = ReadBool();
-                flag2 = ReadBool();
-                flag3 = ReadBool();
-                unk12_1  = ReadUInt32();
-                unk12_2  = ReadUInt32();
-                unk12_3  = ReadUInt32();
-                unk12_4  = ReadUInt32();
-                unk12_5  = ReadUInt32();
-                unk12_6  = ReadUInt32();
-                unk12_7  = ReadUInt32();
-                unk12_8  = ReadUInt32();
-                unk12_9  = ReadUInt32();
-                unk12_10 = ReadUInt32();
-                unk12_11 = ReadUInt32();
-                unk12_12 = ReadUInt32();
-                unk13 = ReadBool();
-                unk14 = ReadUInt16();
-                unk15 = ReadUInt16();
-                unk16 = ReadUInt16();
-                unk17 = ReadUInt32();
-            }
-
-            public int unk1{get; private set;} // 0x0
-            public int unk2{get; private set;} // 0x0
-            public ushort pointer1{get; private set;} // 0x7A
-            public long id{get; private set;}
-            public long targetId{get; private set;} //aggro target?
-            public float y{get; private set;}
-            public float x{get; private set;}
-            public float z{get; private set;}
-            public ushort heading{get; private set;}
-            public int unk3{get; private set;} //0x0C most npc -- 0x0A for unknown
-            public uint templateId{get; private set;}
-            public ushort zoneId{get; private set;}
-            public ushort unk4{get; private set;} //0x64 -- 0x3C -- 0x0
-            public uint unk5{get; private set;} //0xA0 -- 0x0 for unknown -- 0x6E -- 0x75 -- 0x10089 -- 0x50 -- 0x64
-            public ushort unk6{get; private set;} // 0x0 
-            public ushort unk7{get; private set;} // 0x5
-            public ushort unk8{get; private set;} // 0x0
-            public bool flag1{get; private set;}  // true
-            public bool flag2{get; private set;} // false for unknown and enemies (invincible?)
-            public bool flag3{get; private set;} // almost always true
-            public uint unk12_1{get; private set;} // 0x0
-            public uint unk12_2{get; private set;} // 0x0
-            public uint unk12_3{get; private set;} // 0x0
-            public uint unk12_4{get; private set;} // 0x0
-            public uint unk12_5{get; private set;} // 0x0 or 0x1
-            public uint unk12_6{get; private set;} // 0x0
-            public uint unk12_7{get; private set;} // 0x0
-            public uint unk12_8{get; private set;} // 0x0
-            public uint unk12_9{get; private set;} // 0x0
-            public uint unk12_10{get; private set;}// 0x0
-            public uint unk12_11{get; private set;}// 0x0
-            public uint unk12_12{get; private set;}// 0x0
-            public bool unk13{get; private set;}
-            public ushort unk14{get; private set;} //0x0
-            public ushort unk15{get; private set;} //0x1 (bool x2?)
-            public ushort unk16{get; private set;}
-            public uint unk17{get; private set;}
-
-            //more stuff for longer packets
+        //    public ushort Size { get; protected set; }
+        //    public ushort OpCode { get; protected set; }
 
 
-
-
-        }
-
-        class ParsedMessage
-        {
-            protected string packet;
-
-            protected int pos = 0;
-
-            protected ushort ReadUInt16()
-            {
-                var result = (ushort)StringUtils.Hex2BStringToInt(packet.Substring(pos));
-                pos += 4;
-                return result;
-            }
-            protected uint ReadUInt32()
-            {
-                var result = (uint)StringUtils.Hex2BStringToInt(packet.Substring(pos));
-                pos += 8;
-                return result;
-            }
-            protected int ReadInt32()
-            {
-                var result = StringUtils.Hex2BStringToInt(packet.Substring(pos));
-                pos += 8;
-                return result;
-            }
-            protected long ReadLong()
-            {
-                var result = StringUtils.Hex8BStringToInt(packet.Substring(pos));
-                pos += 16;
-                return result;
-            }
-            protected float ReadFloat()
-            {
-                var result = StringUtils.Hex4BStringToFloat(packet.Substring(pos));
-                pos += 8;
-                return result;
-            }
-            protected bool ReadBool()
-            {
-                var r = StringUtils.Hex1BStringToInt(packet.Substring(pos));
-                if (r == 1)
-                {
-                    pos += 2;
-                    return true;
-
-                }
-                else
-                {
-                    pos += 2;
-                    return false;
-                }
-            }
-            protected byte ReadByte()
-            {
-                var result = StringUtils.Hex1BStringToByte(packet);
-                pos += 2;
-                return result;
-            }
-
-            public ushort Size { get; protected set; }
-            public ushort OpCode { get; protected set; }
-
-        }
+        //}
 
     }
 }
-//9067 S_LOAD_TOPO      uint continentId -- float y -- float x -- float z -- byte unk
-//CD2E S_SPAWN_ME       long id -- float y -- float x -- float z -- int heading -- byte alive -- byte unk
-//spawn npcs and users
-//807F C_PLAYER_LOCATION
-//E94F C_VISIT_NEW_SECTION
+//   S_LOAD_TOPO  >>  S_SPAWN_ME  >>  S_SPAWN_USER/NPC  >>  C_PLAYER_LOCATION   >>  C_VISIT_NEW_SECTION

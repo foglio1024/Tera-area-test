@@ -101,6 +101,7 @@
     <Compile Include="AreaDatabase.cs" />
     <Compile Include="AreaDataParser.cs" />
     <Compile Include="ContinentData.cs" />
+    <Compile Include="ItemToolTip.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="LocationParser.cs" />
     <Compile Include="MapData.cs" />
@@ -115,6 +116,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </None>
+    <Compile Include="UserData.cs" />
     <Compile Include="UserDot.xaml.cs">
       <DependentUpon>UserDot.xaml</DependentUpon>
     </Compile>

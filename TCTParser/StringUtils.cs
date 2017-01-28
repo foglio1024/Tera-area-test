@@ -128,6 +128,17 @@ namespace TCTParser
             var B = StringToByteArray(b.ToString());
             return Encoding.UTF7.GetString(B);
         }
+        public static string GetStringFromHex2(string hex, int startIndex, string terminator)
+        {
+            StringBuilder b = new StringBuilder();
+            for (int i = startIndex; i < GetStringEnd(hex, startIndex, terminator); i += 2)
+            {
+                b.Append(hex[i].ToString() + hex[i + 1].ToString());
+            }
+            b.Replace("00", "");
+            var B = StringToByteArray(b.ToString());
+            return Encoding.UTF7.GetString(B);
+        }
 
     }
 

@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid HorizontalAlignment="Left">
             <Grid.ColumnDefinitions>
@@ -26,7 +27,22 @@
                 <Image Name="img" Width="800" Source="resources/maps/WMap_DG_HugeDragon.png" />
             </Grid>
         </Viewbox>
-        
 
+        <ListView Grid.Row="2" Name="lview">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="ID" Width="Auto" DisplayMemberBinding="{Binding Id}"/>
+                    <GridViewColumn Header="cID" Width="Auto" DisplayMemberBinding="{Binding CId}"/>
+                    <GridViewColumn Header="Name" Width="Auto" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Guild" Width="Auto" DisplayMemberBinding="{Binding Guild}"/>
+                    <GridViewColumn Header="Rank" Width="Auto" DisplayMemberBinding="{Binding Rank}"/>
+                    <GridViewColumn Header="Race" Width="Auto" DisplayMemberBinding="{Binding Race}"/>
+                    <GridViewColumn Header="Gender" Width="Auto" DisplayMemberBinding="{Binding Gender}"/>
+                    <GridViewColumn Header="Class" Width="Auto" DisplayMemberBinding="{Binding Class}"/>
+                    <GridViewColumn Header="Level" Width="Auto" DisplayMemberBinding="{Binding Level}"/>
+
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>
