@@ -38,7 +38,73 @@ namespace TCTMain
         public string Class { get; set; }
         public uint Level { get; set; }
 
-        public User(long id,long cid, string n, string g, string r, string race, string gender, string c, uint l)
+        private uint weaponId;
+        private uint armorId;
+        private uint glovesId;
+        private uint bootsId;
+        private uint weaponEnch;
+
+        public string WeaponName
+        {
+            get
+            {
+                if (weaponId != 0)
+                {
+                    var i = ItemsDatabase.Items.Find(x => x.Id == weaponId);
+                    return String.Format("+{1} {0} - {2} ({3})", i.Name, weaponEnch, i.ToolTip, i.MwRate);
+
+                }
+                else return "Unknown or unequipped";
+            }
+
+        }
+        public string ArmorName
+        {
+            get
+            {
+                if (armorId != 0)
+                {
+                    var i = ItemsDatabase.Items.Find(x => x.Id == armorId);
+                    return String.Format("{0} - {1} ({2})", i.Name, i.ToolTip, i.MwRate);
+
+                }
+                else return "Unknown or unequipped";
+
+            }
+
+        }
+        public string GlovesName
+        {
+            get
+            {
+                if (glovesId != 0)
+                {
+                    var i = ItemsDatabase.Items.Find(x => x.Id == glovesId);
+                    return String.Format("{0} - {1} ({2})", i.Name, i.ToolTip, i.MwRate);
+
+                }
+                else return "Unknown or unequipped";
+
+            }
+
+        }
+        public string BootsName
+        {
+            get
+            {
+                if (bootsId != 0)
+                {
+                    var i = ItemsDatabase.Items.Find(x => x.Id == bootsId);
+                    return String.Format("{0} - {1} ({2})", i.Name, i.ToolTip, i.MwRate);
+
+                }
+                else return "Unknown or unequipped";
+
+            }
+
+        }
+
+        public User(long id,long cid, string n, string g, string r, string race, string gender, string c, uint l, uint wep, uint ench, uint ch, uint gl, uint bts)
         {
             Id = id;
             CId = cid;
@@ -58,6 +124,11 @@ namespace TCTMain
                 Race = ItemToolTip.Races.Find(x => x.Name.Equals(race, StringComparison.OrdinalIgnoreCase)).DisplayedText; ;
             }
 
+            weaponId = wep;
+            weaponEnch = ench;
+            armorId = ch;
+            glovesId = gl;
+            bootsId = bts;
         }
     }
     /// <summary>
@@ -81,7 +152,7 @@ namespace TCTMain
             AreaDatabase.PopulateAreas();
             UserData.PopulateUserData();
             ItemToolTip.PopulateItemToolTip();
-
+            ItemsDatabase.PopulateItems();
 
             AreaDataParser.MovePlayer += MovePlayer;
 
@@ -408,6 +479,16 @@ namespace TCTMain
         {
             despawn = false;
 
+        }
+
+        private void lview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var l = sender as ListView;
+            var i = l.SelectedItem as User;
+            wep.Text = i.WeaponName;
+            chest.Text = i.ArmorName;
+            gloves.Text = i.GlovesName;
+            boots.Text = i.BootsName;
         }
     }
 

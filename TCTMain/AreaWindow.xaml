@@ -22,7 +22,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Name="TBc" Margin="4,0" Grid.ColumnSpan="1">Status:</TextBlock>
             <TextBlock Name="us" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Margin="0,0,-1,0">users</TextBlock>
-            
+
         </Grid>
         <Viewbox Grid.Row="1" Margin="10" StretchDirection="Both">
 
@@ -34,29 +34,55 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <StackPanel>
                 <CheckBox Content="VISIT_NEW_SECTION messages" IsChecked="False" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"></CheckBox>
                 <CheckBox Content="DESPAWN messages" IsChecked="False" Checked="CheckBox_Checked_1" Unchecked="CheckBox_Unchecked_1"></CheckBox>
             </StackPanel>
-                
-            <ListView Grid.Column="0" Grid.Row="1" Name="lview">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="ID" Width="Auto"  DisplayMemberBinding="{Binding Id}" />
-                    <GridViewColumn Header="cID" Width="Auto" DisplayMemberBinding="{Binding CId}"/>
-                    <GridViewColumn Header="Name" Width="Auto" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Header="Guild" Width="Auto" DisplayMemberBinding="{Binding Guild}"/>
-                    <GridViewColumn Header="Rank" Width="Auto" DisplayMemberBinding="{Binding Rank}"/>
-                    <GridViewColumn Header="Race" Width="Auto" DisplayMemberBinding="{Binding Race}"/>
-                    <GridViewColumn Header="Gender" Width="Auto" DisplayMemberBinding="{Binding Gender}"/>
-                    <GridViewColumn Header="Class" Width="Auto" DisplayMemberBinding="{Binding Class}"/>
-                    <GridViewColumn Header="Level" Width="Auto" DisplayMemberBinding="{Binding Level}"/>
 
-                </GridView>
-            </ListView.View>
-        </ListView>
+                <ListView Grid.Column="0" Name="lview" Grid.Row="1" SelectionChanged="lview_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="ID" Width="Auto"  DisplayMemberBinding="{Binding Id}" />
+                            <GridViewColumn Header="cID" Width="Auto" DisplayMemberBinding="{Binding CId}"/>
+                            <GridViewColumn Header="Name" Width="Auto" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn Header="Guild" Width="Auto" DisplayMemberBinding="{Binding Guild}"/>
+                            <GridViewColumn Header="Rank" Width="Auto" DisplayMemberBinding="{Binding Rank}"/>
+                            <GridViewColumn Header="Race" Width="Auto" DisplayMemberBinding="{Binding Race}"/>
+                            <GridViewColumn Header="Gender" Width="Auto" DisplayMemberBinding="{Binding Gender}"/>
+                            <GridViewColumn Header="Class" Width="Auto" DisplayMemberBinding="{Binding Class}"/>
+                            <GridViewColumn Header="Level" Width="Auto" DisplayMemberBinding="{Binding Level}"/>
+
+                        </GridView>
+                    </ListView.View>
+                </ListView>
             
-        </Grid>
+            <StackPanel Grid.Row="2">
+                <TextBlock Name="wep"/>
+                <TextBlock Name="chest"/>
+                <TextBlock Name="gloves"/>
+                <TextBlock Name="boots"/>
+            </StackPanel>
+                <!--<ListView Grid.Row="2" Name="itemView">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="ID" Width="Auto"  DisplayMemberBinding="{Binding Id}" />
+                        <GridViewColumn Header="Name" Width="Auto" DisplayMemberBinding="{Binding Name}"/>
+                        <GridViewColumn Header="Description" Width="Auto" DisplayMemberBinding="{Binding ToolTip}" />
+                        <GridViewColumn Header="Category" Width="Auto" DisplayMemberBinding="{Binding Category}"/>
+                        <GridViewColumn Header="Tier" Width="Auto" DisplayMemberBinding="{Binding Tier}"/>
+                        <GridViewColumn Header="Rarity" Width="Auto" DisplayMemberBinding="{Binding Rarity}"/>
+                        <GridViewColumn Header="MW Rate" Width="Auto" DisplayMemberBinding="{Binding MwRate}"/>
+                        <GridViewColumn Header="Awaken" Width="Auto" DisplayMemberBinding="{Binding Awakenable}"/>
+                        <GridViewColumn Header="Level" Width="Auto" DisplayMemberBinding="{Binding Level}"/>
+                        <GridViewColumn Header="Enchant" Width="Auto" DisplayMemberBinding="{Binding EnchantEnable}"/>
+                        <GridViewColumn Header="Trade" Width="Auto" DisplayMemberBinding="{Binding Tradable}"/>
+
+                    </GridView>
+                </ListView.View>
+
+            </ListView>-->
+            </Grid>
     </Grid>
 </Window>

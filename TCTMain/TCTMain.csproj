@@ -98,15 +98,16 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AreaDatabase.cs" />
+    <Compile Include="db\AreaDatabase.cs" />
     <Compile Include="AreaDataParser.cs" />
-    <Compile Include="ContinentData.cs" />
-    <Compile Include="ItemToolTip.cs" />
+    <Compile Include="db\Items.cs" />
+    <Compile Include="db\ContinentData.cs" />
+    <Compile Include="db\ItemToolTip.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="LocationParser.cs" />
     <Compile Include="MapData.cs" />
-    <Compile Include="NewWorldMapData.cs" />
-    <Compile Include="StrSheet_Creature.cs" />
+    <Compile Include="db\NewWorldMapData.cs" />
+    <Compile Include="db\StrSheet_Creature.cs" />
     <Compile Include="UpdateManager.cs" />
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -116,7 +117,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </None>
-    <Compile Include="UserData.cs" />
+    <Compile Include="db\UserData.cs" />
     <Compile Include="UserDot.xaml.cs">
       <DependentUpon>UserDot.xaml</DependentUpon>
     </Compile>

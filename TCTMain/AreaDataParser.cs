@@ -89,7 +89,7 @@ namespace TCTMain
                 template.TeraClass  //6
                 );
 
-            UI.AreaWindow.AddUser(new User(m.userId,m.cId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level));
+            UI.AreaWindow.AddUser(new User(m.userId,m.cId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level, m.weaponId, m.weaponEnchant, m.chestId, m.glovesId, m.bootsId));
 
         }
         void Analyze(string p)
@@ -249,8 +249,6 @@ namespace TCTMain
         }
         class S_SPAWN_USER
         {
-            public uint Size { get; set; }
-            public uint OpCode { get; set; }
             public ushort iconsCount{get; private set;}
             ushort iconsOffset;
             public ushort count2{get; private set;}
