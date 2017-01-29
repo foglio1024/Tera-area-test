@@ -59,14 +59,16 @@ namespace TCTMain
                     SpawnNpc.Invoke(LocationParser.NpcSpawnedLocation(packet));
                     break;
                 case "S_DESPAWN_NPC":
-                    DespawnNpc.Invoke(StringUtils.Hex8BStringToInt(packet.Substring(8)));
+                        DespawnNpc.Invoke(StringUtils.Hex8BStringToInt(packet.Substring(8)));
+
                     break;
                 case "S_NPC_LOCATION":
-                    MoveNpc.Invoke(LocationParser.NpcLocation(packet));
+                        MoveNpc.Invoke(LocationParser.NpcLocation(packet));
                     break;
                 case "S_VISIT_NEW_SECTION":
                     uint[] d = { new SectionProcessor().GetWorldId(packet), new SectionProcessor().GetGuardId(packet), new SectionProcessor().GetSectionId(packet) };
-                    ChangeSection.Invoke(d);
+                        ChangeSection.Invoke(d);
+
                     break;
                 default:
                     break;

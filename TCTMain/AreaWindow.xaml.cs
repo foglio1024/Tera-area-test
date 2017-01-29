@@ -67,12 +67,13 @@ namespace TCTMain
     {
         public AreaWindow()
         {
+            AreaDataParser = new AreaDataParser();
             InitializeComponent();
 
             DamageMeter.Sniffing.TeraSniffer.Instance.Enabled = true;
-            DamageMeter.Sniffing.TeraSniffer.Instance.NewConnection += (Server s) => Dispatcher.Invoke(() => TBc.Text = "Status: connected");         
+            DamageMeter.Sniffing.TeraSniffer.Instance.NewConnection += (Server s) => Dispatcher.Invoke(() => TBc.Text = "Status: connected");
             DamageMeter.Sniffing.TeraSniffer.Instance.MessageReceived += (Message m) => AreaDataParser.ProcessLastPacket(m);
-            DamageMeter.Sniffing.TeraSniffer.Instance.EndConnection += () =>Dispatcher.Invoke(() => TBc.Text = "Status: disconnected");
+            DamageMeter.Sniffing.TeraSniffer.Instance.EndConnection += () => Dispatcher.Invoke(() => TBc.Text = "Status: disconnected");
 
             NewWorldMapData.PopulateWorldMapData();
             ContinentData.PopulateContinentData();
@@ -81,7 +82,6 @@ namespace TCTMain
             UserData.PopulateUserData();
             ItemToolTip.PopulateItemToolTip();
 
-            AreaDataParser = new AreaDataParser();
 
             AreaDataParser.MovePlayer += MovePlayer;
 
@@ -90,11 +90,11 @@ namespace TCTMain
 
             AreaDataParser.SpawnUser += SpawnUser;
             AreaDataParser.SpawnNpc += SpawnNpc;
-
             AreaDataParser.DespawnUser += DespawnUser;
             AreaDataParser.DespawnNpc += DespawnNpc;
 
             AreaDataParser.ChangeSection += SetNewMap;
+
 
             Section.SectionChanged += ChangeSection;
 
@@ -209,6 +209,8 @@ namespace TCTMain
         }
         private void DespawnUser(long id)
         {
+            if (!despawn) return;
+
             Dispatcher.Invoke(() =>
             {
                 for (int i = UserDots.Count - 1; i > 0; i--)
@@ -225,6 +227,7 @@ namespace TCTMain
 
         private void SpawnNpc(Location l)
         {
+
             Dispatcher.Invoke(() =>
             {
                 if (UserDots.Find(x => x.Id == l.Id) == null)
@@ -255,6 +258,7 @@ namespace TCTMain
         }
         private void DespawnNpc(long id)
         {
+            if (!despawn) return;
             Dispatcher.Invoke(() =>
             {
                 for (int i = NpcDots.Count - 1; i > 0; i--)
@@ -271,6 +275,7 @@ namespace TCTMain
 
         private void ChangeSection()
         {
+            if (ignoreNewSections) return;
             Dispatcher.Invoke(() =>
             {
                 if (PlayerDot != null && UserDots != null && NpcDots != null)
@@ -301,6 +306,8 @@ namespace TCTMain
 
         private void SetNewMap(uint[] ids)
         {
+            if (ignoreNewSections) return;
+
             var wId = (int)ids[0];
             var gId = (int)ids[1];
             var sId = (int)ids[2];
@@ -308,22 +315,25 @@ namespace TCTMain
             Section.Current = NewWorldMapData.GetSection(wId,gId,sId);
 
             Dispatcher.Invoke(() => {
-                MapData.Scale = img.Width / Section.Current.MapData.Size.Width;
+                MapData.Scale = img.Height / Section.Current.MapData.Size.Height;
             });
 
             //Console.WriteLine("[NEW_SECTION] {0}",Section.Current.MapId );
         }
-
+        bool ignoreNewSections;
+        bool despawn;
         //Event handlers
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            despawn = false;
+            ignoreNewSections = true;
+            Section.Current = new Section();
+            Section.Current.MapData = NewWorldMapData.Worlds.Find(x => x.Id == 1).Guards.Find(x => x.MapId == "WMap_RNW_Guard").MapData ;
+            img.Source = new BitmapImage(new Uri("resources/maps/WMap_RNW_Guard.png", UriKind.RelativeOrAbsolute));
 
-
-            Section.Current = NewWorldMapData.GetSection("WMap_RNW_Vill");
-
-            if(Section.Current != null)
+            if (Section.Current != null)
             {
-                MapData.Scale = img.Width / Section.Current.MapData.Size.Width;
+                MapData.Scale = img.Height / Section.Current.MapData.Size.Height;
             }
 
 
@@ -375,6 +385,29 @@ namespace TCTMain
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             DamageMeter.Sniffing.TeraSniffer.Instance.Enabled = false;
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            ignoreNewSections = false;
+        }
+
+        private void CheckBox_Checked_1(object sender, RoutedEventArgs e)
+        {
+            despawn = true;
+
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ignoreNewSections = true;
+
+        }
+
+        private void CheckBox_Unchecked_1(object sender, RoutedEventArgs e)
+        {
+            despawn = false;
+
         }
     }
 

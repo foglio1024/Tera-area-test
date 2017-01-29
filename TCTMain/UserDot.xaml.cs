@@ -91,15 +91,15 @@ namespace TCTMain
             {
                 isSpawned = true;
                 ell.Opacity = 1;
-                ell.Fill = new SolidColorBrush(Colors.CadetBlue);
-                this.Visibility = Visibility.Visible;
+                //ell.Fill = new SolidColorBrush(Colors.CadetBlue);
+                //this.Visibility = Visibility.Visible;
             }
             else
             {
                 isSpawned = false;
-                //ell.Opacity = .3;
+                ell.Opacity = .3;
                 //ell.Fill = new SolidColorBrush(Colors.Red);
-                this.Visibility = Visibility.Hidden;
+                //this.Visibility = Visibility.Hidden;
             }
 
         }
