@@ -9,12 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TCTMain</RootNamespace>
     <AssemblyName>TeraCharacterTracker</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
     <PublishUrl>C:\Users\Vincenzo1\Desktop\TCT\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,7 +31,6 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -100,9 +100,17 @@
   <ItemGroup>
     <Compile Include="db\AreaDatabase.cs" />
     <Compile Include="AreaDataParser.cs" />
-    <Compile Include="db\Items.cs" />
+    <Compile Include="MapProvider.cs" />
+    <Compile Include="types\Item.cs" />
+    <Compile Include="types\ItemString.cs" />
+    <Compile Include="types\Continent.cs" />
+    <Compile Include="types\Guard.cs" />
+    <Compile Include="types\HuntingZone.cs" />
+    <Compile Include="db\ItemsDatabase.cs" />
     <Compile Include="db\ContinentData.cs" />
     <Compile Include="db\ItemToolTip.cs" />
+    <Compile Include="types\Section.cs" />
+    <Compile Include="types\World.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="LocationParser.cs" />
     <Compile Include="MapData.cs" />
@@ -118,6 +126,7 @@
       <SubType>Code</SubType>
     </None>
     <Compile Include="db\UserData.cs" />
+    <Compile Include="types\User.cs" />
     <Compile Include="UserDot.xaml.cs">
       <DependentUpon>UserDot.xaml</DependentUpon>
     </Compile>

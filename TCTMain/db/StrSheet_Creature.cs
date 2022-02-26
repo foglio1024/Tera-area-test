@@ -38,6 +38,8 @@ namespace TCTMain
                 HuntingZones.Add(huntingZone);
             }
 
+            StrSheetCreature = null;
+
         }
 
         public static string GetNpcName(int zoneId, uint templateId)

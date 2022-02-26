@@ -37,30 +37,33 @@ namespace TCTMain
             switch (DamageMeter.Sniffing.TeraSniffer.Instance.opn.GetName(message.OpCode))
             {
                 case "C_PLAYER_LOCATION":
-                    MovePlayer.Invoke(LocationParser.PlayerLocation(packet));
+                    //MovePlayer.Invoke(LocationParser.PlayerLocation(packet));
                     break;
                 case "C_PLAYER_FLYING_LOCATION":
-                    MovePlayer.Invoke(LocationParser.PlayerFlyingLocation(packet));
+                    //MovePlayer.Invoke(LocationParser.PlayerFlyingLocation(packet));
                     break;
                 case "S_USER_LOCATION":
-                    MoveUser.Invoke(LocationParser.UserLocation(packet));
+                    //MoveUser.Invoke(LocationParser.UserLocation(packet));
                     break;
                 case "S_USER_FLYING_LOCATION":
-                    MoveUser.Invoke(LocationParser.UserFlyingLocation(packet));
+                    //MoveUser.Invoke(LocationParser.UserFlyingLocation(packet));
                     break;
                 case "S_SPAWN_USER":
-                    AnalyzeParsed(new S_SPAWN_USER(new CustomReader(message)));
-                    SpawnUser.Invoke(LocationParser.UserSpawnedLocation(packet));
+                    var spawnedUserData = new S_SPAWN_USER(new CustomReader(message));
+                    SpawnUser.Invoke(spawnedUserData);
                     break;
                 case "S_DESPAWN_USER":
-                    DespawnUser.Invoke(StringUtils.Hex8BStringToInt(packet.Substring(8)));
+                    //DespawnUser.Invoke(StringUtils.Hex8BStringToInt(packet.Substring(8)));
                     break;
                 case "S_SPAWN_NPC":
                     SpawnNpc.Invoke(LocationParser.NpcSpawnedLocation(packet));
                     break;
                 case "S_DESPAWN_NPC":
-                        DespawnNpc.Invoke(StringUtils.Hex8BStringToInt(packet.Substring(8)));
-
+                    DespawnNpc.Invoke(StringUtils.Hex8BStringToInt(packet.Substring(8)));
+                    break;
+                case "S_SPAWN_ME":
+                    var m = new S_SPAWN_ME(new CustomReader(message));
+                    //SpawnMe.Invoke(m);
                     break;
                 case "S_NPC_LOCATION":
                         MoveNpc.Invoke(LocationParser.NpcLocation(packet));
@@ -68,7 +71,11 @@ namespace TCTMain
                 case "S_VISIT_NEW_SECTION":
                     uint[] d = { new SectionProcessor().GetWorldId(packet), new SectionProcessor().GetGuardId(packet), new SectionProcessor().GetSectionId(packet) };
                         ChangeSection.Invoke(d);
-
+                    break;
+                case "S_LOAD_TOPO":
+                    var t = new S_LOAD_TOPO(new CustomReader(message));
+                    var c = AreaDatabase.Areas.Find(x => x.ContinentId == t.ContinentId);
+                    MapProvider.SetNewMap(NewWorldMapData.GetSection(c.WorldId, c.GuardId, c.SectionIds[0]));
                     break;
                 default:
                     break;
@@ -89,7 +96,7 @@ namespace TCTMain
                 template.TeraClass  //6
                 );
 
-            UI.AreaWindow.AddUser(new User(m.userId,m.cId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level, m.weaponId, m.weaponEnchant, m.chestId, m.glovesId, m.bootsId));
+            //UI.AreaWindow.AddUser(new User(m.userId,m.cId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level, m.weaponId, m.weaponEnchant, m.chestId, m.glovesId, m.bootsId));
 
         }
         void Analyze(string p)
@@ -128,7 +135,7 @@ namespace TCTMain
 
             public byte Unk { get; private set; }
         }
-        class S_SPAWN_ME 
+        public class S_SPAWN_ME 
         {
             public S_SPAWN_ME(CustomReader r)
             {
@@ -139,7 +146,7 @@ namespace TCTMain
                 X = r.ReadSingle();
                 Z = r.ReadSingle();
 
-                Heading = r.ReadUInt32();
+                Heading = r.ReadInt32();
 
                 Alive = r.ReadByte();
                 Unk = r.ReadByte();
@@ -151,14 +158,14 @@ namespace TCTMain
             public float X { get; private set; }
             public float Z { get; private set; }
 
-            public uint Heading { get; private set; }
+            public int Heading { get; private set; }
 
             public byte Alive { get; private set; }
             public byte Unk { get; private set; }
 
 
         }
-        class S_SPAWN_NPC 
+        public class S_SPAWN_NPC 
         {
             public S_SPAWN_NPC(CustomReader r)
             {
@@ -247,7 +254,7 @@ namespace TCTMain
 
 
         }
-        class S_SPAWN_USER
+        public class S_SPAWN_USER
         {
             public ushort iconsCount{get; private set;}
             ushort iconsOffset;
@@ -262,7 +269,8 @@ namespace TCTMain
             ushort guildEmblemOffset;
             ushort details2Offset;
             public ushort details2Count{get; private set;}
-            public long cId{get; private set;}  //?
+            public int cId{get; private set;}  //?
+            public int srvId { get; private set; }
             public long userId{get; private set;}
             public float y{get; private set;}
             public float x{get; private set;}
@@ -360,11 +368,12 @@ namespace TCTMain
                 detailsOffset = r.ReadUInt16();
                 detailsCount = r.ReadUInt16();
                 guildTitleOffset = r.ReadUInt16();
-                guildEmblemOffset = r.ReadUInt16();
+                //guildEmblemOffset = r.ReadUInt16();
                 details2Offset = r.ReadUInt16();
                 details2Count = r.ReadUInt16();
 
-                cId = r.ReadInt64();
+                srvId = r.ReadInt32();
+                cId = r.ReadInt32();
                 userId = r.ReadInt64();
 
                 y = r.ReadSingle();
@@ -478,7 +487,7 @@ namespace TCTMain
                     details[i] = r.ReadByte();
                 }
 
-                guildTitle = r.ReadTeraString();
+                //guildTitle = r.ReadTeraString();
                 guildEmblem = r.ReadTeraString();
 
                 details2 = new byte[details2Count];
@@ -489,7 +498,7 @@ namespace TCTMain
 
             }
         }
-        class C_PLAYER_LOCATION 
+        public class C_PLAYER_LOCATION 
         {
             public C_PLAYER_LOCATION(CustomReader r)
             {
@@ -523,7 +532,7 @@ namespace TCTMain
             public uint Time{get; private set;}
 
         }
-        class C_VISIT_NEW_SECTION 
+        public class C_VISIT_NEW_SECTION 
         {
             public C_VISIT_NEW_SECTION(CustomReader r)
             {
@@ -537,7 +546,7 @@ namespace TCTMain
             public uint SectionId { get; private set; }
         }
 
-        class C_PLAYER_FLYING_LOCATION 
+        public class C_PLAYER_FLYING_LOCATION 
         {
             public C_PLAYER_FLYING_LOCATION(CustomReader r)
             {
@@ -602,11 +611,11 @@ namespace TCTMain
 
 
         public Action<Location> MovePlayer;
-
+        public Action<S_SPAWN_ME> SpawnMe;
         public Action<Location> MoveUser;
         public Action<Location> MoveNpc;
 
-        public Action<Location> SpawnUser;
+        public Action<S_SPAWN_USER> SpawnUser;
         public Action<Location> SpawnNpc;
 
         public Action<long> DespawnUser;
@@ -635,7 +644,7 @@ namespace TCTMain
             public Dictionary<uint, uint> Versions { get; } = new Dictionary<uint, uint>();
         }
         
-        class CustomReader : BinaryReader
+        public class CustomReader : BinaryReader
         {
             public CustomReader(Tera.Message message)
             : base(GetStream(message), Encoding.Unicode)

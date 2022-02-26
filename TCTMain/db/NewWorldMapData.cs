@@ -10,7 +10,6 @@ namespace TCTMain
 {
     public static class NewWorldMapData
     {
-
         static XDocument WorldMapData;
 
         public static List<World> Worlds { get; set; }
@@ -121,6 +120,7 @@ namespace TCTMain
                     Worlds.Add(world);
                 }
             }
+
         }
 
         public static Section GetSection(int wId, int gId, int sId)
@@ -149,264 +149,24 @@ namespace TCTMain
             return new Section();
         }
 
-    }
-
-
-
-    public class World
-    {
-        private int id;
-        public int Id
+        public static Guard GetGuard(string mapId)
         {
-            get { return id; }
-            set { id = value; }
-        }
-
-        private int nameId;
-        public int NameId
-        {
-            get { return nameId; }
-            set { nameId = value; }
-        }
-
-        private string mapId;
-        public string MapId
-        {
-            get { return mapId; }
-            set { mapId = value; }
-        }
-
-        private List<Continent> continents;
-        public List<Continent> Continents
-        {
-            get { return continents; }
-            set { continents = value; }
-        }
-
-        private List<Guard> guards;
-        public List<Guard> Guards
-        {
-            get { return guards; }
-            set { guards = value; }
-        }
-
-        public Size GetWorldSize()
-        {
-            double xmin = 0;
-            double xmax = 0;
-            double ymin = 0;
-            double ymax = 0;
-
-            foreach (var guard in guards)
+            foreach (var w  in Worlds)
             {
-                if (guard.MapData.Position.X > xmax)
+                foreach (var g in w.Guards)
                 {
-                    xmax = guard.MapData.Position.X;
-                }
-                if (guard.MapData.Position.X < xmin)
-                {
-                    xmin = guard.MapData.Position.X;
-                }
-                if (guard.MapData.Position.Y > ymax)
-                {
-                    ymax = guard.MapData.Position.Y;
-                }
-                if (guard.MapData.Position.Y < ymin)
-                {
-                    ymin = guard.MapData.Position.Y;
+                    if(g.MapId == mapId)
+                    {
+                        return g;
+                    }
                 }
             }
-
-            return new Size(xmax - xmin, ymax - ymin);
+            return new Guard();
         }
-
-        public Point GetCenter()
+        public static Guard GetGuard(int wId, int gId)
         {
-            var s = GetWorldSize();
-            return new Point(s.Width / 2, s.Height / 2);
+            return Worlds.Find(x => x.Id == wId).Guards.Find(x => x.Id == gId);
         }
 
-        public World(int _id, int _nameId, string _mapId)
-        {
-            id = _id;
-            nameId = _nameId;
-            mapId = _mapId;
-
-            continents = new List<Continent>();
-            guards = new List<Guard>();
-        }
-    }
-    public class Continent
-    {
-        private int id;
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
-
-        public List<HuntingZone> HuntingZones { get; set; }
-
-        private double centerPixelX;
-        private double centerPixelY;
-
-        public Point Center {
-            get
-            {
-                return new Point(centerPixelX, centerPixelY);
-            }
-            set
-            {
-                centerPixelX = value.X;
-                centerPixelY = value.Y;
-            }
-        }
-        public Continent(int _id, double x, double y)
-        {
-            id = _id;
-            centerPixelX = x;
-            centerPixelY = y;
-
-        }
-        public Continent(int _id)
-        {
-            id = _id;
-            HuntingZones = new List<HuntingZone>();
-        }
-    }
-    public class Guard
-    {
-        private int id;
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
-
-        private int nameId;
-        public int NameId
-        {
-            get { return nameId; }
-            set { nameId = value; }
-        }
-
-        private string mapId;
-        public string MapId
-        {
-            get { return mapId; }
-            set { mapId = value; }
-        }
-
-        private MapData mapData;
-        public MapData MapData
-        {
-            get { return mapData; }
-            set { mapData = value; }
-        }
-
-        private List<Section> sections;
-        public List<Section> Sections
-        {
-            get { return sections; }
-            set { sections = value; }
-        }
-
-        public Guard(int _id, int _nameId, string _mapId, MapData _mapData)
-        {
-            id = _id;
-            nameId = _nameId;
-            mapId = _mapId;
-            mapData = _mapData;
-
-            sections = new List<Section>();
-        }
-    }
-    public class Section 
-    {
-        private int id;
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
-
-        private int nameId;
-        public int NameId
-        {
-            get { return nameId; }
-            set { nameId = value; }
-        }
-
-        private string mapId;
-        public string MapId
-        {
-            get { return mapId; }
-            set { mapId = value; }
-        }
-
-        private MapData mapData;
-        public MapData MapData
-        {
-            get { return mapData; }
-            set { mapData = value; }
-        }
-
-        public Section(int _id, int _nameId, string _mapId, MapData _mapData)
-        {
-            id = _id;
-            nameId = _nameId;
-            mapId = _mapId;
-            mapData = _mapData;
-        }
-        public Section()
-        {
-            id = -1;
-            nameId = -1;
-            mapId = "";
-            mapData = new MapData();
-        }
-
-        public Section(int sId)
-        {
-            id = sId;
-            nameId = -1;
-            mapId = "";
-            mapData = new MapData();
-
-        }
-
-        public static Section currentSection;
-        public static Section Current
-        {
-            get
-            {
-                return currentSection;
-            }
-            set
-            {
-                if (currentSection != value)
-                {
-                    currentSection= value;
-                    SectionChanged.Invoke();
-                }
-            }
-        }
-
-        public static event Action SectionChanged;
-
-    }
-
-    public class HuntingZone
-    {
-
-        public int Id { get; set; }
-
-        public List<Npc> Npcs { get; set; }
-
-        public HuntingZone(int _id)
-        {
-            Id = _id;
-            Npcs = new List<Npc>();
-        }
     }
 }

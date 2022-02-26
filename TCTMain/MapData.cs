@@ -9,7 +9,7 @@ namespace TCTMain
 {
     public class MapData
     {
-        public static double Scale { get; set; } 
+        //public static double Scale { get; set; } 
 
         private double h;
         private double w;
@@ -48,7 +48,7 @@ namespace TCTMain
         public MapData()
         {
             h = w = t = l = 0;
-            Scale = .1;
+            //Scale = .1;
         }
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace TCTMain
@@ -12,14 +11,16 @@ namespace TCTMain
     {
         public static List<Item> Items { get; set; }
         static List<ItemString> ItemStrings { get; set; }
-        static List<XDocument> StrSheet_ItemDocs;
-        static List<XDocument> ItemDataDocs;
+        static List<XDocument> StrSheet_ItemDocs = new List<XDocument>();
+        static List<XDocument> ItemDataDocs = new List<XDocument>();
         static string stringFilePath = @"C:\Users\Vincenzo1\Desktop\Progetti VS\TeraDataTools-master\TeraDataTools-master\release\xml\StrSheet_Item";
         static string dataFilePath = @"C:\Users\Vincenzo1\Desktop\Progetti VS\TeraDataTools-master\TeraDataTools-master\release\xml\ItemData";
 
         static void LoadStringFiles()
         {
-            StrSheet_ItemDocs = new List<XDocument>();
+            int totalStringFiles = Directory.EnumerateFiles(stringFilePath).Count();
+
+            //StrSheet_ItemDocs = new List<XDocument>();
 
             int i = 0;
 
@@ -27,13 +28,16 @@ namespace TCTMain
             {
                 XDocument doc = XDocument.Load(Path.Combine(stringFilePath, String.Format("StrSheet_Item-{0}.xml", i)));
                 StrSheet_ItemDocs.Add(doc);
+                UI.LogWrite("Loaded string file {0}/{1}", i+1, totalStringFiles);
                 i++;
             }
 
         }
         static void LoadDataFiles()
         {
-            ItemDataDocs = new List<XDocument>();
+            int totalDataFiles = Directory.EnumerateFiles(dataFilePath).Count();
+
+            //ItemDataDocs = new List<XDocument>();
 
             int i = 0;
 
@@ -41,6 +45,8 @@ namespace TCTMain
             {
                 XDocument doc = XDocument.Load(Path.Combine(dataFilePath, String.Format("ItemData-{0}.xml", i)));
                 ItemDataDocs.Add(doc);
+                UI.LogWrite("Loaded data file {0}/{1}", i + 1, totalDataFiles);
+
                 i++;
             }
 
@@ -138,22 +144,27 @@ namespace TCTMain
 
         public static void PopulateItems()
         {
-            LoadDataFiles();
             LoadStringFiles();
-            Console.WriteLine("{0} files loaded.",ItemDataDocs.Count);
+            LoadDataFiles();
             ItemStrings = new List<ItemString>();
             Items = new List<Item>();
+            int i = 1;
             foreach (var doc in StrSheet_ItemDocs)
             {
                 ParseStrSheetFile(doc);
+                UI.LogWrite("Parsing string file {0}/{1}",i, StrSheet_ItemDocs.Count);
+                i++;
             }
-            int i = 1;
+            i = 1;
             foreach (var doc in ItemDataDocs)
             {
-                Console.WriteLine("Parsing file {0}/{1}", i,ItemDataDocs.Count);
+                UI.LogWrite("Parsing file {0}/{1}", i,ItemDataDocs.Count);
                 ParseDataFile(doc);
                 i++;
             }
+
+            ItemStrings.Clear();
+            UI.LogWrite("Items database loaded.");
         }
         static bool ParseBool(string attr)
         {
@@ -165,51 +176,5 @@ namespace TCTMain
         }
     }
 
-    class ItemString
-    {
-        public uint Id { get; set; }
-        public string Name { get; set; }
-        public string ToolTip { get; set; }
 
-        public ItemString(uint id, string n, string t)
-        {
-            Id = id;
-            Name = n;
-            ToolTip = t;
-        }
-    }
-    public class Item
-    {
-        public uint Id { get; set; }
-        public string Icon { get; set; }
-        public string Category { get; set; }
-        public int Level { get; set; }
-        public int Tier { get; set; } //rank
-        public int Rarity { get; set; } //rareGrade
-        public float MwRate { get; set; } //masterpieceRate
-        public bool Awakenable { get; set; }
-        public bool EnchantEnable { get; set; }
-        public bool Tradable { get; set; }
-
-        public string  Name { get; set; }
-        public string ToolTip { get; set; }
-
-        public Item(uint id, string icon, string cat, int lv, int tier, int rarity, float mw, bool awaken, bool enchant, bool trade, string name, string tt)
-        {
-            Id = id;
-            Icon = icon;
-            Category = cat;
-            Level = lv;
-            Tier = tier;
-            rarity = Rarity;
-            MwRate = mw;
-            Awakenable = awaken;
-            EnchantEnable = enchant;
-            trade = Tradable;
-
-            Name = name;
-            ToolTip = tt;
-        }
-
-    }
 }

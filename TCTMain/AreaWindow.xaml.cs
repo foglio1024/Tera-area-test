@@ -3,13 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -19,147 +23,59 @@ using System.Windows.Shapes;
 using TCTParser;
 using Tera;
 using Tera.Game;
+using static TCTMain.AreaDataParser;
 
 namespace TCTMain
 {
     public static class UI
     {
         public static AreaWindow AreaWindow;
+        public static Image MapImage;
+
+        public static void LogWrite(string format, params object[] args)
+        {
+            var s = String.Format(format, args);
+            AreaWindow.Dispatcher.Invoke(() => AreaWindow.TBlog.Text = s);
+        }
+        public static void UserCountLogWrite(string format, params object[] args)
+        {
+            var s = String.Format(format, args);
+            AreaWindow.Dispatcher.Invoke(() => AreaWindow.TBusers.Text = s);
+        }
+
     }
-    public class User
-    {
-        public long Id { get; set; }
-        public long CId { get; set; }
-        public string Name { get; set; }
-        public string Guild { get; set; }
-        public string Rank { get; set; }
-        public string Race { get; set; }
-        public string Gender { get; set; }
-        public string Class { get; set; }
-        public uint Level { get; set; }
-
-        private uint weaponId;
-        private uint armorId;
-        private uint glovesId;
-        private uint bootsId;
-        private uint weaponEnch;
-
-        public string WeaponName
-        {
-            get
-            {
-                if (weaponId != 0)
-                {
-                    var i = ItemsDatabase.Items.Find(x => x.Id == weaponId);
-                    return String.Format("+{1} {0} - {2} ({3})", i.Name, weaponEnch, i.ToolTip, i.MwRate);
-
-                }
-                else return "Unknown or unequipped";
-            }
-
-        }
-        public string ArmorName
-        {
-            get
-            {
-                if (armorId != 0)
-                {
-                    var i = ItemsDatabase.Items.Find(x => x.Id == armorId);
-                    return String.Format("{0} - {1} ({2})", i.Name, i.ToolTip, i.MwRate);
-
-                }
-                else return "Unknown or unequipped";
-
-            }
-
-        }
-        public string GlovesName
-        {
-            get
-            {
-                if (glovesId != 0)
-                {
-                    var i = ItemsDatabase.Items.Find(x => x.Id == glovesId);
-                    return String.Format("{0} - {1} ({2})", i.Name, i.ToolTip, i.MwRate);
-
-                }
-                else return "Unknown or unequipped";
-
-            }
-
-        }
-        public string BootsName
-        {
-            get
-            {
-                if (bootsId != 0)
-                {
-                    var i = ItemsDatabase.Items.Find(x => x.Id == bootsId);
-                    return String.Format("{0} - {1} ({2})", i.Name, i.ToolTip, i.MwRate);
-
-                }
-                else return "Unknown or unequipped";
-
-            }
-
-        }
-
-        public User(long id,long cid, string n, string g, string r, string race, string gender, string c, uint l, uint wep, uint ench, uint ch, uint gl, uint bts)
-        {
-            Id = id;
-            CId = cid;
-            Name = n;
-            Guild = g;
-            Rank = r;
-            Class = ItemToolTip.Classes.Find(x => x.Name.Equals(c, StringComparison.OrdinalIgnoreCase)).DisplayedText;
-            Level = l;
-            Gender = ItemToolTip.Genders.Find(x => x.Name.Equals(gender, StringComparison.OrdinalIgnoreCase)).DisplayedText;
-
-            if (race == "popori" && gender == "female")
-            {
-                Race = ItemToolTip.Races.Find(x => x.Name.Equals("elin", StringComparison.OrdinalIgnoreCase)).DisplayedText;
-            }
-            else
-            {
-                Race = ItemToolTip.Races.Find(x => x.Name.Equals(race, StringComparison.OrdinalIgnoreCase)).DisplayedText; ;
-            }
-
-            weaponId = wep;
-            weaponEnch = ench;
-            armorId = ch;
-            glovesId = gl;
-            bootsId = bts;
-        }
-    }
-    /// <summary>
-    /// Logica di interazione per Window1.xaml
-    /// </summary>
     public partial class AreaWindow : Window
     {
-        public AreaWindow()
+        void LoadDB()
         {
-            AreaDataParser = new AreaDataParser();
-            InitializeComponent();
-
-            DamageMeter.Sniffing.TeraSniffer.Instance.Enabled = true;
-            DamageMeter.Sniffing.TeraSniffer.Instance.NewConnection += (Server s) => Dispatcher.Invoke(() => TBc.Text = "Status: connected");
-            DamageMeter.Sniffing.TeraSniffer.Instance.MessageReceived += (Message m) => AreaDataParser.ProcessLastPacket(m);
-            DamageMeter.Sniffing.TeraSniffer.Instance.EndConnection += () => Dispatcher.Invoke(() => TBc.Text = "Status: disconnected");
-
             NewWorldMapData.PopulateWorldMapData();
             ContinentData.PopulateContinentData();
             StrSheet_Creature.PopulateHuntingZones();
             AreaDatabase.PopulateAreas();
             UserData.PopulateUserData();
             ItemToolTip.PopulateItemToolTip();
-            ItemsDatabase.PopulateItems();
+            //ItemsDatabase.PopulateItems();
 
+        }
+        public AreaWindow()
+        {
+            AreaDataParser = new AreaDataParser();
+            InitializeComponent();
+
+            DamageMeter.Sniffing.TeraSniffer.Instance.Enabled = true;
+            DamageMeter.Sniffing.TeraSniffer.Instance.NewConnection += (Tera.Game.Server s) => Dispatcher.Invoke(() => TBc.Text = "Status: connected");
+            DamageMeter.Sniffing.TeraSniffer.Instance.MessageReceived += (Message m) => AreaDataParser.ProcessLastPacket(m);
+            DamageMeter.Sniffing.TeraSniffer.Instance.EndConnection += () => Dispatcher.Invoke(() => TBc.Text = "Status: disconnected");
+            Thread t = new Thread(new ThreadStart(LoadDB));
+            t.Start();
+
+
+            AreaDataParser.SpawnUser += NewUser;
+
+            AreaDataParser.SpawnMe += SpawnPlayer;
             AreaDataParser.MovePlayer += MovePlayer;
-
             AreaDataParser.MoveUser += MoveUser;
             AreaDataParser.MoveNpc += MoveNpc;
-
-            AreaDataParser.SpawnUser += SpawnUser;
             AreaDataParser.SpawnNpc += SpawnNpc;
             AreaDataParser.DespawnUser += DespawnUser;
             AreaDataParser.DespawnNpc += DespawnNpc;
@@ -167,127 +83,233 @@ namespace TCTMain
             AreaDataParser.ChangeSection += SetNewMap;
 
 
-            Section.SectionChanged += ChangeSection;
-
             UI.AreaWindow = this;
             DataContext = this;
 
             Users = new ObservableCollection<User>();
             BindingOperations.EnableCollectionSynchronization(Users, new object());
-            lview.ItemsSource = Users;
+            //lview.ItemsSource = Users;
         }
-        ObservableCollection<User> Users; 
 
+
+        ObservableCollection<User> Users;
+        List<string> IncompleteUsers;
+        List<string> CompleteUsers;
         AreaDataParser AreaDataParser;
-        public static Guard CurrentGuard;
-        static int users;
+        public static MapData CurrentMap;
 
-        static Canvas EntityCanvas;
-        static Canvas UsersCanvas;
-        static Canvas PlayerCanvas;
+        public static Canvas EntityCanvas;
+        public static Canvas UsersCanvas;
+        public static Canvas PlayerCanvas;
 
-        static List<UserDot> UserDots;
-        static List<UserDot> NpcDots;
-        static UserDot PlayerDot;
+        //static List<UserDot> UserDots;
+        static User Player;
 
-        public void AddUser(User u)
+        //public void AddUser(User u)
+        //{
+        //    for (int i = 0; i < Users.Count; i++)
+        //    {
+        //        if(Users[i].Id == u.Id)
+        //        {
+        //            return;
+        //        }
+        //    }
+
+        //    var q = new SqlCommand(String.Format("SELECT * FROM TeraUsers WHERE id={0};", u.Id), cn);
+        //    SqlDataReader r = q.ExecuteReader();
+        //    if (!r.HasRows)
+        //    {
+        //        r.Close();
+        //        var c = new SqlCommand(String.Format("INSERT INTO TeraUsers (id, name, class) VALUES ('{0}', '{1}', '{2}')", u.Id, u.Name, u.Class), cn);
+        //        c.ExecuteNonQuery();
+        //        c.Dispose();
+                
+        //    }
+                
+        //    else r.Close();
+
+        //    Users.Add(u);
+        //    users++;
+        //}
+
+        private void NewUser(S_SPAWN_USER m)
         {
-            for (int i = 0; i < Users.Count; i++)
+
+            User newUser;
+            var template = UserData.UserTemplates.Find(x => x.Id == m.templateId);
+
+            if (CompleteUsers.Contains(m.name))
             {
-                if(Users[i].Id == u.Id)
+                return;
+            }
+            else if (IncompleteUsers.Contains(m.name))
+            {
+                for (int i = IncompleteUsers.Count - 1; i > 0; i--)
                 {
-                    return;
+                    if (IncompleteUsers[i] == m.name)
+                    {
+                        newUser = new User(m.userId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level, m.weaponId, m.weaponEnchant, m.chestId, m.glovesId, m.bootsId, new Point(m.x, m.y), m.heading, m.srvId);
+                        IncompleteUsers.RemoveAt(i);
+                        CompleteUsers.Add(newUser.Name);
+                        UpdateDataBaseEntry(newUser);
+                    }
                 }
             }
-            Users.Add(u);
-            users++;
+            else
+            {
+                newUser = new User(m.userId, m.name, m.guildName, m.guildRank, template.Race, template.Gender, template.TeraClass, m.level, m.weaponId, m.weaponEnchant, m.chestId, m.glovesId, m.bootsId, new Point(m.x, m.y), m.heading, m.srvId);
+                CompleteUsers.Add(newUser.Name);
+                AddDataBaseEntry(newUser);
+            }
         }
+        private void SpawnPlayer(S_SPAWN_ME m)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (Player == null)
+                {
+                    Player = new User(new Point(m.X, m.Y),m.Heading);
+                }
+                else
+                {
+                    Player.Dot.Heading = m.Heading;
+                    Player.Dot.Position = new Point(m.X, m.Y);
+                }
+            });
+        }
+        int total = 0;
+        void AddDataBaseEntry(User u)
+        {
+            using (SqlConnection cn = new SqlConnection(CS))
+            {
+                var q = new SqlCommand(String.Format("SELECT * FROM TeraUsers WHERE charName='{0}';", u.Name), cn);
+                cn.Open();
+                SqlDataReader r = q.ExecuteReader();
+                if (!r.HasRows)
+                {
+                    r.Close();
+                    var c = new SqlCommand(String.Format("INSERT INTO TeraUsers (charName, class, race, gender, serverId) VALUES ('{0}', '{1}', '{2}','{3}', {4})", u.Name, u.Class, u.Race, u.Gender, u.ServerId), cn);
+                    c.ExecuteNonQuery();
+                    c.Dispose();
+                    UI.LogWrite("Last user: {0}", u.Name);
+                }
 
+                else r.Close();
+
+                q.Dispose();
+                q = new SqlCommand("SELECT COUNT(charName) FROM TeraUsers", cn);
+                total = (int)q.ExecuteScalar();
+
+                UI.UserCountLogWrite("{0} tot, {1}/{2} c/i", total, CompleteUsers.Count, IncompleteUsers.Count);
+            }
+        }
+        void UpdateDataBaseEntry(User u)
+        {
+            using (var cn = new SqlConnection(CS))
+            {
+
+                var q = new SqlCommand(String.Format("UPDATE TeraUsers SET gender='{1}', race='{2}', serverId='{3}' WHERE charName='{0}';", u.Name, u.Gender, u.Race, u.ServerId), cn);
+                cn.Open();
+                q.ExecuteNonQuery();
+                q.Dispose();
+
+                UI.LogWrite("{0}'s data updated.", u.Name);
+            }
+        }
 
         //Movement handlers
         private void MovePlayer(Location l)
         {
             Dispatcher.Invoke(() =>
             {
-                PlayerDot.Location = l;
+                Player.Dot.Position = l.Position;
+                Player.Dot.Heading = l.Heading;
+                Player.Dot.IsFlying = l.IsFlying;
                 //Console.WriteLine("[PLAYER][MOVE] {0}", l.Position);
             });
         }
         private void MoveUser(Location l)
         {
-            Dispatcher.Invoke(() => {
-
-                if (UserDots.Find(x => x.Id == l.Id) != null)
+            Dispatcher.Invoke(() =>
+            {
+                foreach (User u in Users)
                 {
-                    UserDots.Find(x => x.Id == l.Id).Location = l;
+                    if(u.Id == l.Id)
+                    {
+                        u.Dot.Position = l.Position;
+                        u.Dot.Heading = l.Heading;
+                    }
+                }
+                //if (Users.Find(x => x.Id == l.Id) != null)
+                //{
+                //    Users.Find(x => x.Id == l.Id).Location = l;
 
-                    //Console.WriteLine("[USER][MOVE] {0} > {1} -- flying = {2}", l.Id, l.Position, l.IsFlying);
-                }
-                else
-                {
-                    //Console.WriteLine("[USER][ERROR] {0} not found (flying = {1})", l.Id, l.IsFlying);
-                }
+                //    //Console.WriteLine("[USER][MOVE] {0} > {1} -- flying = {2}", l.Id, l.Position, l.IsFlying);
+                //}
+                //else
+                //{
+                //    //Console.WriteLine("[USER][ERROR] {0} not found (flying = {1})", l.Id, l.IsFlying);
+                //}
 
             });
         }
         private void MoveNpc(Location l)
         {
-            Dispatcher.Invoke(() => {
+            //Dispatcher.Invoke(() => {
 
-                if (NpcDots.Find(x => x.Id == l.Id) != null)
-                {
-                    NpcDots.Find(x => x.Id == l.Id).Location = l;
+            //    if (NpcDots.Find(x => x.Id == l.Id) != null)
+            //    {
+            //        NpcDots.Find(x => x.Id == l.Id).Location = l;
 
-                    //Console.WriteLine("[NPC][MOVE] {0} > {1} -- flying = {2}", l.Id, l.Position, l.IsFlying);
-                }
-                else
-                {
-                    //Console.WriteLine("[NPC][ERROR] {0} not found (flying = {1})", l.Id, l.IsFlying);
-                }
+            //        //Console.WriteLine("[NPC][MOVE] {0} > {1} -- flying = {2}", l.Id, l.Position, l.IsFlying);
+            //    }
+            //    else
+            //    {
+            //        //Console.WriteLine("[NPC][ERROR] {0} not found (flying = {1})", l.Id, l.IsFlying);
+            //    }
 
-            });
+            //});
         }
-
+    
         private void SpawnUser(Location l)
         {
-            Dispatcher.Invoke(() =>
-            {
-                if (UserDots.Find(x => x.Id == l.Id) == null)
-                {
-                    var newUserDot = new UserDot
-                    {
-                        Id = l.Id,
-                        IsSpawned = true,
-                        RenderTransformOrigin = new Point(.5, .5),
-                        MainColor = Colors.CadetBlue,
-                        SecondColor = Colors.White,
-                        Location = l
-                    };
+            //Dispatcher.Invoke(() =>
+            //{
+            //    if (Users.Where(x => x.Id == l.Id) == null)
+            //    {
+            //        var newUserDot = new UserDot(l);
 
-                    UserDots.Add(newUserDot);
-                    EntityCanvas.Children.Add(newUserDot);
+            //        newUserDot.IsSpawned = true;
+            //        newUserDot.MainColor = Colors.CadetBlue;
+            //        newUserDot.SecondColor = Colors.White;
+                        
+                    
 
-                    //users++;
-                    us.Text = users.ToString();
-                    //Console.WriteLine("[USER][SPAWN] {0}", l.Id);
-                }
-                else
-                {
-                    UserDots.Find(x => x.Id == l.Id).IsSpawned = true;
-                    //Console.WriteLine("[USER][RESPAWN] user: {0}", l.Id);
-                }
-            });
+            //        UserDots.Add(newUserDot);
+            //        EntityCanvas.Children.Add(newUserDot);
+
+
+            //        //users++;
+            //        us.Text = users.ToString();
+            //        //Console.WriteLine("[USER][SPAWN] {0}", l.Id);
+            //    }
+            //    else
+            //    {
+            //        UserDots.Find(x => x.Id == l.Id).IsSpawned = true;
+            //        //Console.WriteLine("[USER][RESPAWN] user: {0}", l.Id);
+            //    }
+            //});
         }
         private void DespawnUser(long id)
         {
-            if (!despawn) return;
+            if (!Properties.Settings.Default.despawn) return;
 
             Dispatcher.Invoke(() =>
             {
-                for (int i = UserDots.Count - 1; i > 0; i--)
+                for (int i = Users.Count - 1; i > 0; i--)
                 {
-                    if (UserDots[i].Id == id)
-                        UserDots[i].IsSpawned = false;
+                    if (Users[i].Id == id)
+                        Users[i].Dot.IsSpawned = false;
 
                 }
                 //users--;
@@ -298,186 +320,235 @@ namespace TCTMain
 
         private void SpawnNpc(Location l)
         {
+            //Dispatcher.Invoke(() =>
+            //{
+            //    if (UserDots.Find(x => x.Id == l.Id) == null)
+            //    {
+            //        var newNpcDot = new UserDot(l);
 
-            Dispatcher.Invoke(() =>
-            {
-                if (UserDots.Find(x => x.Id == l.Id) == null)
-                {
-                    var newNpcDot = new UserDot
-                    {
-                        Id = l.Id,
-                        IsSpawned = true,
-                        RenderTransformOrigin = new Point(.5, .5),
-                        MainColor = Colors.Red,
-                        SecondColor = Colors.White,
-                        Location = l
-                    };
+            //        newNpcDot.Id = l.Id;
+            //        newNpcDot.IsSpawned = true;
+            //        newNpcDot.RenderTransformOrigin = new Point(.5, .5);
+            //        newNpcDot.MainColor = Colors.Red;
+            //        newNpcDot.SecondColor = Colors.White;
+                    
 
-                    NpcDots.Add(newNpcDot);
-                    EntityCanvas.Children.Add(newNpcDot);
+            //        NpcDots.Add(newNpcDot);
+            //        EntityCanvas.Children.Add(newNpcDot);
 
-                    //users++;
-                    us.Text = users.ToString();
-                    //Console.WriteLine("[NPC][SPAWN] {0}", l.Id);
-                }
-                else
-                {
-                    UserDots.Find(x => x.Id == l.Id).IsSpawned = true;
-                    //Console.WriteLine("[NPC][RESPAWN] {0}", l.Id);
-                }
-            });
+            //        //users++;
+            //        us.Text = users.ToString();
+            //        //Console.WriteLine("[NPC][SPAWN] {0}", l.Id);
+            //    }
+            //    else
+            //    {
+            //        UserDots.Find(x => x.Id == l.Id).IsSpawned = true;
+            //        //Console.WriteLine("[NPC][RESPAWN] {0}", l.Id);
+            //    }
+            //});
         }
         private void DespawnNpc(long id)
         {
-            if (!despawn) return;
-            Dispatcher.Invoke(() =>
-            {
-                for (int i = NpcDots.Count - 1; i > 0; i--)
-                {
-                    if (NpcDots[i].Id == id)
-                        NpcDots[i].IsSpawned = false;
+            //if (!!Properties.Settings.Default.despawn) return;
+            //Dispatcher.Invoke(() =>
+            //{
+            //    for (int i = NpcDots.Count - 1; i > 0; i--)
+            //    {
+            //        if (NpcDots[i].Id == id)
+            //            NpcDots[i].IsSpawned = false;
 
-                }
-                //users--;
-                //us.Text = users.ToString();
-                //Console.WriteLine("[NPC][REMOVED] {0} removed.", id);
-            });
+            //    }
+            //    //users--;
+            //    //us.Text = users.ToString();
+            //    //Console.WriteLine("[NPC][REMOVED] {0} removed.", id);
+            //});
         }
 
-        private void ChangeSection()
+        private void Reposition()
         {
-            if (ignoreNewSections) return;
+            if (!Properties.Settings.Default.S_VISIT_NEW_LOCATION) return;
             Dispatcher.Invoke(() =>
             {
-                if (PlayerDot != null && UserDots != null && NpcDots != null)
+                if (Player != null && Users != null/* && NpcDots != null*/)
                 {
-                    PlayerDot.Location = PlayerDot.Location;
-
-                    foreach (var ud in UserDots)
+                    //PlayerDot.Location = PlayerDot.Location;
+                    Player.Dot.Reposition();
+                    foreach (var ud in Users)
                     {
-                        ud.Location = ud.Location;
+                        //try
+                        //{
+                        //    ud.Location = ud.Location;
+                        //}
+                        //catch (Exception) { }
+                        ud.Dot.Reposition();
 
                     }
-                    foreach (var nd in NpcDots)
-                    {
-                        nd.Location = nd.Location;
-                    }
+                    //foreach (var nd in NpcDots)
+                    //{
+                    //    try
+                    //    {
+
+                    //    //nd.Location = nd.Location;
+                    //    }
+                    //    catch (Exception) { }
+                    //}
                 }
 
-                string n = Section.Current.MapId;
-                if (Section.Current.MapId.Contains("Empty"))
-                {
-                    n = n.Replace("Empty", "Field");
-                }
-
-                img.Source = new BitmapImage(new Uri("resources/maps/" + n + ".png", UriKind.RelativeOrAbsolute));
-                this.Title = Section.Current.MapId;
             });
         }
 
         private void SetNewMap(uint[] ids)
         {
-            if (ignoreNewSections) return;
+            if (!Properties.Settings.Default.S_VISIT_NEW_LOCATION) return;
 
             var wId = (int)ids[0];
             var gId = (int)ids[1];
             var sId = (int)ids[2];
 
-            Section.Current = NewWorldMapData.GetSection(wId,gId,sId);
-
-            Dispatcher.Invoke(() => {
-                MapData.Scale = img.Height / Section.Current.MapData.Size.Height;
-            });
-
-            //Console.WriteLine("[NEW_SECTION] {0}",Section.Current.MapId );
-        }
-        bool ignoreNewSections;
-        bool despawn;
-        //Event handlers
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            despawn = false;
-            ignoreNewSections = true;
-            Section.Current = new Section();
-            Section.Current.MapData = NewWorldMapData.Worlds.Find(x => x.Id == 1).Guards.Find(x => x.MapId == "WMap_RNW_Guard").MapData ;
-            img.Source = new BitmapImage(new Uri("resources/maps/WMap_RNW_Guard.png", UriKind.RelativeOrAbsolute));
-
-            if (Section.Current != null)
+            if (sId != MapProvider.CurrentId)
             {
-                MapData.Scale = img.Height / Section.Current.MapData.Size.Height;
+                Dispatcher.Invoke(() =>
+                {
+                    MapProvider.SetNewMap(NewWorldMapData.GetSection(wId, gId, sId));
+                    this.Title = MapProvider.CurrentMapName;
+                    try
+                    {
+                        Reposition();
+                    }
+                    catch
+                    {
+
+                    }
+                });
             }
 
 
-            root.Width = img.ActualWidth;
-            root.Height = img.ActualHeight;
+            //Console.WriteLine("[NEW_SECTION] {0}",Section.Current.MapId );
+        }
+        //Event handlers
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            //UI.MapImage = img;
+            //MapProvider.SetNewMap(NewWorldMapData.GetGuard("WMap_RNW_Guard"));
+
+
+            //root.Width = img.ActualWidth;
+            //root.Height = img.ActualHeight;
 
 
 
-            EntityCanvas = new Canvas
-            {
-                Width =  root.Width,
-                Height = root.Height,
-                Margin = new Thickness(0)
-            };
-            UsersCanvas = new Canvas
-            {
-                Width = root.Width,
-                Height = root.Height,
-                Margin = new Thickness(0)
-            };
-            PlayerCanvas = new Canvas
-            {
-                Width = root.Width,
-                Height = root.Height,
-                Margin = new Thickness(0),
-            };
+            //EntityCanvas = new Canvas
+            //{
+            //    Width =  root.Width,
+            //    Height = root.Height,
+            //    Margin = new Thickness(0)
+            //};
+            //UsersCanvas = new Canvas
+            //{
+            //    Width = root.Width,
+            //    Height = root.Height,
+            //    Margin = new Thickness(0)
+            //};
+            //PlayerCanvas = new Canvas
+            //{
+            //    Width = root.Width,
+            //    Height = root.Height,
+            //    Margin = new Thickness(0),
+            //};
 
-            root.Children.Add(EntityCanvas);
-            root.Children.Add(UsersCanvas);
-            root.Children.Add(PlayerCanvas);
+            //root.Children.Add(EntityCanvas);
+            //root.Children.Add(UsersCanvas);
+            //root.Children.Add(PlayerCanvas);
 
-            PlayerDot = new UserDot
-            {
-                RenderTransformOrigin = new Point(.5, .5),       
-                MainColor = Colors.White,
-                SecondColor = Colors.Black         
-            };
-            PlayerCanvas.Children.Add(PlayerDot);
-
-            UserDots = new List<UserDot>();
-            NpcDots = new List<UserDot>();
+            //UserDots = new List<UserDot>();
+            //NpcDots = new List<UserDot>();
 
             //ChangeSection(new uint[] { 1, 24, 183001 });
 
 
-            MovePlayer(new Location(0, 0, 0, 0, 0, false));
+            //if (Properties.Settings.Default.S_VISIT_NEW_LOCATION) newSectionCB.IsChecked = true;
+            //else newSectionCB.IsChecked = false;
+            //
+            //if (Properties.Settings.Default.despawn) despawnCB.IsChecked = true;
+            //else despawnCB.IsChecked = false;
+
+            
+            using(var cn = new SqlConnection(CS))
+            {
+                var q = new SqlCommand("select count(*) from TeraUsers", cn);
+                cn.Open();
+
+                total = (int)q.ExecuteScalar();
+
+                q = new SqlCommand("select charName from TeraUsers where ServerId is null", cn);
+                IncompleteUsers = new List<string>();
+                using (var r = q.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        IncompleteUsers.Add(Convert.ToString(r["charName"]));
+                    }
+                }
+                q = new SqlCommand("select charName from TeraUsers where ServerId is not null", cn);
+                CompleteUsers = new List<string>();
+                using (var r = q.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        CompleteUsers.Add(Convert.ToString(r["charName"]));
+                    }
+                }
+                q = new SqlCommand("select * from TeraServers", cn);
+                Servers = new List<Server>();
+                using (var r = q.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        Servers.Add(new Server(Convert.ToInt32(r["ServerId"]), Convert.ToString(r["ServerName"])));
+                    }
+                }
+                UI.UserCountLogWrite("{0} users ({1}/{2} c/i)", total, CompleteUsers.Count, IncompleteUsers.Count);
+            }
 
         }
+        List<Server> Servers;
+        class Server
+        {
+            public int ServerId { get; set; }
+            public string ServerName { get; set; }
+            public Server(int id, string n)
+            {
+                ServerId = id;
+                ServerName = n;
+            }
+        }
+        string CS = @"Data Source=PC-SOGGIORNO\SQLEXPRESS; Initial Catalog=TCS;Integrated Security=False;User ID=tc;Password=tcstalker;Connect Timeout=15;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            Properties.Settings.Default.Save();
             DamageMeter.Sniffing.TeraSniffer.Instance.Enabled = false;
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            ignoreNewSections = false;
+            Properties.Settings.Default.S_VISIT_NEW_LOCATION = true;
         }
 
         private void CheckBox_Checked_1(object sender, RoutedEventArgs e)
         {
-            despawn = true;
+            Properties.Settings.Default.despawn = true;
 
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            ignoreNewSections = true;
+            Properties.Settings.Default.S_VISIT_NEW_LOCATION = false;
 
         }
 
         private void CheckBox_Unchecked_1(object sender, RoutedEventArgs e)
         {
-            despawn = false;
+            Properties.Settings.Default.despawn = false;
 
         }
 
@@ -485,10 +556,33 @@ namespace TCTMain
         {
             var l = sender as ListView;
             var i = l.SelectedItem as User;
-            wep.Text = i.WeaponName;
-            chest.Text = i.ArmorName;
-            gloves.Text = i.GlovesName;
-            boots.Text = i.BootsName;
+            //wep.Text = i.WeaponName;
+            //chest.Text = i.ArmorName;
+            //gloves.Text = i.GlovesName;
+            //boots.Text = i.BootsName;
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
+        }
+
+        private void Window_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            menu.IsEnabled = true;
+            menu.Placement = PlacementMode.Mouse;
+            menu.IsOpen = true;
+
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 

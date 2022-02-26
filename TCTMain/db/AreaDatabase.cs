@@ -59,6 +59,7 @@ namespace TCTMain
             {
                 ParseFile(doc);
             }
+            AreaDocs.Clear();
         }
 
         public static Area GetArea(int sId)

@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[Table]
+(
+	[Id] BIGINT NOT NULL PRIMARY KEY, 
+    [Name] VARCHAR(30) NULL
+)
+
+
